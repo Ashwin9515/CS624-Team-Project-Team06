@@ -13,20 +13,26 @@ export default function TaskCard({ task }: { task: Task }) {
 
 const styles = StyleSheet.create({
   card: {
-    padding: 12,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    padding: 14,
+    backgroundColor: '#FCE4EC',
+    borderRadius: 10,
     marginVertical: 6,
-    borderWidth: 1,
-    borderColor: '#ddd'
+    borderLeftWidth: 5,
+    borderLeftColor: '#EC407A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold'
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#880E4F'
   },
   details: {
     fontSize: 14,
-    color: '#666',
+    color: '#6A1B9A',
     marginTop: 4
   }
 });

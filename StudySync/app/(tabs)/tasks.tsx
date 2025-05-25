@@ -7,11 +7,8 @@ import { useCallback } from 'react';
 export default function TasksScreen() {
   const { tasks } = useTasks();
 
-  // Re-render when screen is focused to reflect latest task state
   useFocusEffect(
-    useCallback(() => {
-      // No-op, just triggers rerender on focus due to [tasks] dependency
-    }, [tasks])
+    useCallback(() => {}, [tasks])
   );
 
   return (

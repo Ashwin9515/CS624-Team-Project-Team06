@@ -1,36 +1,64 @@
-import { View, Text, Button, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>📚 StudySync</Text>
-      <Image source={require('../../assets/images/study.png')} style={styles.image} />
-      <Button title="Go to Tasks" onPress={() => router.push('/tasks')} color="#4CAF50" />
-      <Button title="Open Calendar" onPress={() => router.push('/calendar')} color="#03A9F4" />
-      <Button title="Chat with StudyBot" onPress={() => router.push('/chatbot')} color="#FF4081" />
-    </View>
+    <ImageBackground
+      source={require('../../assets/images/study.png')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <Text style={styles.logo}>📅 StudySync</Text>
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/calendar')}>
+          <Text style={styles.buttonText}>Dashboard</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/tasks')}>
+          <Text style={styles.buttonText}>Tasks</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.chatButton]} onPress={() => router.push('/chatbot')}>
+          <Text style={styles.buttonText}>Chat with StudyBot</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: '#FFF3E0',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20
+    justifyContent: 'flex-end',
+    paddingBottom: 60,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#D84315',
+  logo: {
+    position: 'absolute',
+    top: 60,
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#ffffff',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
-  image: {
-    width: 150,
-    height: 150,
-    marginBottom: 30,
-    borderRadius: 10,
-  }
+  buttonGroup: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  button: {
+    width: '80%',
+    backgroundColor: '#4DB6AC',
+    paddingVertical: 14,
+    borderRadius: 30,
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  chatButton: {
+    backgroundColor: '#9575CD',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
