@@ -1,87 +1,118 @@
-# CS624-Team-Project-Team06
+# 📚 StudySync – TP02 Project Progress Report
 
-# StudySync – A React Native Study Planner App
+## 🚀 Overview
 
-## Project Overview
+**StudySync** is a mobile productivity app designed for students to manage their academic workload. Built with **React Native** using **Expo Router**, the app supports offline-first task tracking, a rule-based chatbot for study tips, a visual calendar for date-wise organization, and vibrant UI/UX styling for enhanced user experience.
 
-**StudySync** is a productivity-focused mobile application designed to help students organize, track, and manage their academic tasks and study sessions. Developed using **React Native**, the app integrates essential mobile development principles covered in our course—including components, navigation, state management, and persistent storage.
-
-This project is part of a team assignment focused on creating a fully functional React Native application that demonstrates each member's contributions while implementing core mobile app development concepts.
+This README documents the project status for **TP02**, covering the features completed, technologies used, collaboration strategies, and implementation roadmap.
 
 ---
 
-## Key Features
+## 🧩 Key Features Implemented
 
-- **Task Management (CRUD)**  
-  Create, view, update, and delete study tasks with essential metadata like subject, due date, and priority.
+- ✅ **Task Management (CRUD)**  
+  Add, view, update, and delete tasks with title, subject, due date, and priority.
 
-- **Dashboard & Daily Progress Tracker**  
-  Visual overview of today's study schedule with a progress bar to track task completion.
+- ✅ **Persistent Local Storage**  
+  All task data is saved using `AsyncStorage`, ensuring offline support.
 
-- **Persistent Storage with AsyncStorage**  
-  All user tasks and progress are saved using AsyncStorage, ensuring data is preserved between sessions.
+- ✅ **Rule-Based Chatbot**  
+  A local chatbot provides motivational study tips and answers academic productivity queries.
 
-- **Responsive UI & Intuitive Navigation**  
-  Smooth navigation between screens using the React Navigation library, with a clean and user-friendly interface.
+- ✅ **Calendar View**  
+  In-app calendar using `react-native-calendars` allows students to visualize tasks by due date.
 
----
+- ✅ **Component-Based UI**  
+  Reusable components like `TaskCard` and `MessageBubble` enhance consistency and design.
 
-## Team Members and Responsibilities
-
-| Team Member | Responsibility |
-|-------------|----------------|
-| Ashwin Paturi | Developed the task creation, editing, and deletion screens; implemented AsyncStorage for data persistence. |
-| Vidyasagar Neerudi | Built the dashboard and progress tracker components; handled dynamic task filtering and visualization. |
-| Chandrahasa Munagala | Integrated React Navigation; organized screen structure; implemented reusable components and handled styling. |
+- ✅ **Scalable Backend Option**  
+  A MERN stack backend (Node.js + MongoDB Atlas) is implemented as a future enhancement path for cloud-based syncing.
 
 ---
 
-## Technologies Used
+## 🧠 TP01 Feedback Response
 
-- **React Native**
-- **React Navigation**
-- **AsyncStorage**
-- **JavaScript / JSX**
-- **GitHub Codespaces**
+- **🔔 Notifications & Reminders**  
+  We’ve laid the foundation for reminders by emphasizing due dates and calendar visuals. Push notifications via `expo-notifications` are planned for TP03.
 
----
-
-## Project Structure (Planned)
-/StudySync ├── /components │ └── TaskCard.js │ └── ProgressBar.js ├── /screens │ └── HomeScreen.js │ └── TasksScreen.js │ └── AddEditTaskScreen.js ├── /navigation │ └── AppNavigator.js ├── /utils │ └── storage.js ├── App.js └── README.md
-
+- **🔐 Data Privacy Practices**  
+  The app uses local storage by default and does not collect or transmit user data. Optional backend mode handles only non-sensitive metadata with plans for encryption and secure communication in the future.
 
 ---
 
-## What We’ve Learned
+## 🗂 Screens & Navigation
 
-Through building StudySync, we:
-- Applied course concepts in a practical, real-world project.
-- Practiced collaborative development using GitHub Codespaces.
-- Learned to manage mobile app state and handle persistent storage.
-- Developed confidence in building interactive, user-friendly UIs.
+| Screen        | Description                                          |
+|---------------|------------------------------------------------------|
+| `HomeScreen`  | Entry point with navigation buttons to core features |
+| `TasksScreen` | List of all tasks with editable entries              |
+| `AddTask`     | Form to add or update a task                         |
+| `Calendar`    | View tasks by due date using interactive calendar    |
+| `Chatbot`     | Interact with a study-focused rule-based assistant   |
 
----
-
-## References
-
-- React Native Documentation – https://reactnative.dev/  
-- React Navigation Documentation – https://reactnavigation.org/  
-- AsyncStorage Docs – https://react-native-async-storage.github.io/async-storage/  
-- City University Library on Avoiding Plagiarism – https://library.cityu.edu/howto/apa-writing/avoid-plagiarism/  
+Navigation is implemented using folder-based routing via **Expo Router**.
 
 ---
 
-## Project Milestones
+## 💻 Tech Stack
 
-| Deliverable | Status | Due |
-|-------------|--------|-----|
-| TP01: Project Proposal | ✅ Drafted | Week 3 |
-| TP02: Progress Report | 🔄 Upcoming | Week 7 |
-| TP03: Final Report | 🔄 Upcoming | Week 10 |
-| TP04: Presentation & Demo | 🔄 Upcoming | Week 10 |
+- **Frontend**: React Native (Expo)
+- **Navigation**: Expo Router
+- **Local Storage**: AsyncStorage
+- **Calendar**: `react-native-calendars`
+- **Backend (Optional)**: Node.js, Express, MongoDB Atlas
+- **Dev Environment**: GitHub Codespaces
 
 ---
 
-## Approval
+## 👨‍💻 Team Contributions
 
-This topic has been submitted to the instructor for approval under **TP01 - Project Proposal**.
+| Team Member              | Contributions                                               |
+|--------------------------|-------------------------------------------------------------|
+| Ashwin Shastry Paturi    | Chatbot integration, navigation structure, calendar screen  |
+| Vidyasagar Neerudi       | Task CRUD, AsyncStorage persistence, backend API setup      |
+| Chandrahasa Munagala     | UI design, component styling, Home screen, README/Docs      |
+
+Weekly updates and detailed roles are tracked in the MEETINGS.md file, which will be updated soon.
+
+---
+
+## 📎 Setup Instructions
+
+1. **Install dependencies**  
+   ```bash
+   npm install
+   ```
+
+2. **Start the app (in Codespaces or locally)**  
+   ```bash
+   npx expo start --tunnel
+   ```
+
+3. **Install Calendar dependency**  
+   ```bash
+   npx expo install react-native-calendars
+   ```
+
+4. *(Optional)* For backend support, run the MERN API from `/studysync-server` with:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+---
+
+## 📌 Remaining Work
+
+- Push notification system
+- UI polish and device testing
+- Finalize backend deployment
+- Demo video and final presentation slides
+- Optional: Upgrade chatbot to use **Gemma AI** via Ollama server
+
+---
+
+## 🔗 Resources
+
+- [Project GitHub Repository](https://github.com/Ashwin9515/CS624-Team-Project-Team06)
+- [Backend Repository](/workspaces/CS624-Team-Project-Team06/studysync-server)
