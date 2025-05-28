@@ -1,28 +1,30 @@
-import { View, Button, FlatList, Text } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
-import { useTasks } from '../../context/TaskContext';
-import TaskCard from '../../components/TaskCard';
-import { useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList } from 'react-native';
+import axios from 'axios';
 
-export default function TasksScreen() {
-  const { tasks } = useTasks();
+export default function Tasks() {
+  const [tasks, setTasks] = useState([]);
 
-  useFocusEffect(
-    useCallback(() => {}, [tasks])
-  );
+  useEffect(() => {
+    axios.get(`${process.env.EXPO_PUBLIC_API}/tasks`).then(res => setTasks(res.data));
+  }, []);
+
+  const renderStatus = (task) => {
+    if (task.completed) return '✅ Completed';
+    if (new Date(task.dueDate) < new Date()) return '⚠️ Overdue';
+    return '🕒 Due Soon';
+  };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Button title="Add Task" onPress={() => router.push('/add-task')} />
-      {tasks.length === 0 ? (
-        <Text style={{ marginTop: 20 }}>No tasks added yet.</Text>
-      ) : (
-        <FlatList
-          data={[...tasks].reverse()}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TaskCard task={item} />}
-        />
+    <FlatList
+      data={tasks}
+      keyExtractor={item => item._id}
+      renderItem={({ item }) => (
+        <View className="p-4 border-b">
+          <Text className="font-bold">{item.title}</Text>
+          <Text>{renderStatus(item)}</Text>
+        </View>
       )}
-    </View>
+    />
   );
 }

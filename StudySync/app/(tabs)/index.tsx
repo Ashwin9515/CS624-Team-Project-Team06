@@ -1,64 +1,66 @@
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
-import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import axios from 'axios';
+import { useRouter } from 'expo-router';
+import { getToken, saveToken } from '../utils/auth';
 
-export default function HomeScreen() {
-  return (
-    <ImageBackground
-      source={require('../../assets/images/study.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <Text style={styles.logo}>📅 StudySync</Text>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.button} onPress={() => router.push('/calendar')}>
-          <Text style={styles.buttonText}>Dashboard</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => router.push('/tasks')}>
-          <Text style={styles.buttonText}>Tasks</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.chatButton]} onPress={() => router.push('/chatbot')}>
-          <Text style={styles.buttonText}>Chat with StudyBot</Text>
-        </TouchableOpacity>
+export default function Login() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const token = await getToken();
+      if (token) router.replace('/home');
+      else setLoading(false);
+    })();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(`${process.env.EXPO_PUBLIC_API}/auth/login`, {
+        username,
+        password,
+      });
+      await saveToken(res.data.token);
+      router.replace('/home');
+    } catch (error) {
+      Alert.alert('Login Failed', error.response?.data?.error || 'Invalid credentials');
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" />
       </View>
-    </ImageBackground>
+    );
+  }
+
+  return (
+    <View className="flex-1 justify-center items-center p-6 bg-white">
+      <Text className="text-3xl font-bold mb-4">Login</Text>
+      <TextInput
+        className="border p-3 rounded w-full mb-3"
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TextInput
+        className="border p-3 rounded w-full mb-3"
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TouchableOpacity onPress={handleLogin} className="bg-blue-500 px-6 py-3 rounded mt-2">
+        <Text className="text-white font-bold">Login</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/register')} className="mt-4">
+        <Text className="text-blue-600">Don’t have an account? Register</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 60,
-  },
-  logo: {
-    position: 'absolute',
-    top: 60,
-    fontSize: 30,
-    fontWeight: '900',
-    color: '#ffffff',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-  },
-  buttonGroup: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  button: {
-    width: '80%',
-    backgroundColor: '#4DB6AC',
-    paddingVertical: 14,
-    borderRadius: 30,
-    marginVertical: 10,
-    alignItems: 'center',
-  },
-  chatButton: {
-    backgroundColor: '#9575CD',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

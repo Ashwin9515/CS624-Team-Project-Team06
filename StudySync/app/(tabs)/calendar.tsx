@@ -1,38 +1,28 @@
-import { useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import { useTasks } from '../../context/TaskContext';
-import TaskCard from '../../components/TaskCard';
+import { Agenda } from 'react-native-calendars';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function CalendarScreen() {
-  const { tasks } = useTasks();
-  const [selectedDate, setSelectedDate] = useState('');
+  const [items, setItems] = useState({});
 
-  const filteredTasks = tasks.filter(task => task.dueDate === selectedDate);
+  useEffect(() => {
+    axios.get(`${process.env.EXPO_PUBLIC_API}/tasks`).then(res => {
+      const tasks = res.data;
+      const grouped = {};
+      tasks.forEach(task => {
+        const date = task.dueDate.split('T')[0];
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push({ name: task.title });
+      });
+      setItems(grouped);
+    });
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Calendar
-        onDayPress={day => setSelectedDate(day.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, marked: true, selectedColor: '#03A9F4' } }}
-        style={styles.calendar}
-      />
-      <Text style={styles.header}>Tasks on {selectedDate || '...'}</Text>
-      {filteredTasks.length === 0 ? (
-        <Text style={{ marginTop: 20 }}>No tasks for this date.</Text>
-      ) : (
-        <FlatList
-          data={filteredTasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TaskCard task={item} />}
-        />
-      )}
-    </View>
+    <Agenda
+      items={items}
+      renderItem={(item) => <View><Text>{item.name}</Text></View>}
+      renderEmptyDate={() => <View />}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10 },
-  calendar: { marginBottom: 20 },
-  header: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 }
-});
