@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-import { getToken, saveToken } from '../utils/auth';
+import { getToken, saveToken } from '../../utils/auth';
 
 export default function Login() {
   const router = useRouter();

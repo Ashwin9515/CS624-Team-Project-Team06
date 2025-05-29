@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text } from 'react-native';
 import axios from 'axios';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
+
+const API = Constants.expoConfig?.extra?.apiUrl ?? '';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,7 +12,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(`${process.env.EXPO_PUBLIC_API}/login`, { email, password });
+      const res = await axios.post(`${API}/auth/login`, { email, password });
       // Store token or session info
       router.replace('/home');
     } catch (err) {

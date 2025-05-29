@@ -1,0 +1,47 @@
+// app.config.js
+export default {
+  expo: {
+    name: "StudySync-frontend",
+    slug: "StudySync-frontend",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/images/icon.png",
+    scheme: "studysyncfrontend",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    platforms: ["ios", "android", "web"],
+    ios: {
+      supportsTablet: true
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/images/adaptive-icon.png",
+        backgroundColor: "#ffffff"
+      },
+      edgeToEdgeEnabled: true
+    },
+    web: {
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/favicon.png"
+    },
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/images/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff"
+        }
+      ]
+    ],
+    experiments: {
+      typedRoutes: true
+    },
+    extra: {
+      apiUrl: "https://super-pancake-r445xxpp6gjj2574p-5000.app.github.dev/api"
+    }
+  }
+};

@@ -2,7 +2,7 @@ import { View, Text, Switch, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { clearToken } from '../utils/auth';
+import { clearToken } from '../../utils/auth';
 
 export default function Settings() {
   const router = useRouter();

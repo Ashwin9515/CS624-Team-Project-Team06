@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "StudySync",
-    "slug": "StudySync",
+    "name": "StudySync-frontend",
+    "slug": "StudySync-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "studysync",
+    "scheme": "studysyncfrontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true
     },
@@ -33,11 +34,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-font"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "false"
+      }
     }
   }
 }
