@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  Button,
   Text,
   ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Button,
   ImageBackground,
 } from 'react-native';
 import axios from 'axios';
@@ -27,43 +27,30 @@ export default function Chatbot() {
       const res = await axios.post(`${process.env.EXPO_PUBLIC_API}/chat`, { prompt: input });
       const botMessage = { role: 'bot', content: res.data.response };
       setMessages(prev => [...prev, botMessage]);
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'bot', content: '⚠️ Error connecting to server.' }]);
     }
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/studysync.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80}
-      >
-        <Text style={styles.title}>💬 Chat with StudyBot</Text>
-
+    <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 12 }}>
           {messages.map((m, i) => (
             <View
               key={i}
-              style={[
-                styles.messageBubble,
-                m.role === 'user' ? styles.userMessage : styles.botMessage,
-              ]}
+              style={[styles.bubble, m.role === 'user' ? styles.user : styles.bot]}
             >
-              <Text style={styles.messageText}>{m.content}</Text>
+              <Text style={styles.text}>{m.content}</Text>
             </View>
           ))}
         </ScrollView>
-
         <View style={styles.inputRow}>
           <TextInput
             value={input}
             onChangeText={setInput}
-            placeholder="Ask me anything..."
+            placeholder="Ask anything..."
+            placeholderTextColor="#ccc"
             style={styles.input}
           />
           <Button title="Send" onPress={handleSend} />
@@ -74,53 +61,34 @@ export default function Chatbot() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 12,
-    color: '#1E3A8A',
-  },
-  messages: {
-    flex: 1,
-    marginBottom: 12,
-  },
-  messageBubble: {
+  bg: { flex: 1 },
+  container: { flex: 1, padding: 16 },
+  messages: { flex: 1, marginBottom: 12 },
+  bubble: {
     padding: 12,
     borderRadius: 12,
     marginVertical: 4,
     maxWidth: '80%',
   },
-  userMessage: {
-    backgroundColor: '#DCF8C6',
+  user: {
+    backgroundColor: '#34D399',
     alignSelf: 'flex-end',
   },
-  botMessage: {
-    backgroundColor: '#E4E6EB',
+  bot: {
+    backgroundColor: '#E5E7EB',
     alignSelf: 'flex-start',
   },
-  messageText: {
-    fontSize: 16,
-  },
+  text: { fontSize: 16, color: '#111827' },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: '#fff',
     borderRadius: 8,
+    padding: 12,
     marginRight: 8,
-    backgroundColor: '#fff',
   },
 });

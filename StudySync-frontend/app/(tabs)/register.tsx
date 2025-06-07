@@ -5,7 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ImageBackground,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,115 +19,104 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword || !name) {
-      return Alert.alert('Incomplete Form', 'Please fill in all fields.');
-    }
-
     if (password !== confirmPassword) {
-      return Alert.alert('Password Mismatch', 'Passwords do not match.');
+      Alert.alert('Validation Error', 'Passwords do not match.');
+      return;
     }
-
     try {
-      const { data } = await API.post('/auth/register', {
-        email,
-        password,
-        name,
-      });
+      const { data } = await API.post('/auth/register', { name, email, password });
       await AsyncStorage.setItem('token', data.token);
       router.replace('/home');
-    } catch (err: any) {
-      Alert.alert('Registration Failed', err.response?.data?.error || 'Something went wrong');
+    } catch (err) {
+      Alert.alert('Registration Error', 'Account creation failed. Try again.');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <ImageBackground
+      source={require('../../assets/studysync.png')}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Text style={styles.title}>Create Account</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={name}
-        onChangeText={setName}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Full Name"
+          placeholderTextColor="#ccc"
+          value={name}
+          onChangeText={setName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#ccc"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#ccc"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          placeholderTextColor="#ccc"
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={!showPassword}
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry={!showPassword}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
-
-      <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.toggleLink}>
-        <Text style={styles.toggleText}>
-          {showPassword ? '🙈 Hide Passwords' : '👁️ Show Passwords'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-        <Text style={styles.registerText}>Register</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push('/')} style={styles.link}>
-        <Text style={styles.linkText}>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity onPress={handleRegister} style={styles.button}>
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24, color: '#1E3A8A' },
+  bg: { flex: 1 },
+  overlay: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    color: '#fff',
+    borderRadius: 10,
     padding: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ffffff40',
   },
-  toggleLink: {
-    alignSelf: 'flex-end',
-    marginBottom: 12,
+  button: {
+    backgroundColor: '#10B981',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 4,
   },
-  toggleText: {
-    color: '#2563EB',
-    fontSize: 14,
-  },
-  registerButton: {
-    backgroundColor: '#2563EB',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  registerText: {
+  buttonText: {
     color: '#fff',
-    fontWeight: 'bold',
     textAlign: 'center',
-  },
-  link: { marginTop: 8 },
-  linkText: {
-    color: '#2563EB',
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });

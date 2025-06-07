@@ -1,157 +1,104 @@
-import { View, Text, Switch, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { clearToken } from '../../utils/auth';
-import React from 'react';
 
 export default function Settings() {
   const router = useRouter();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [vibrationEnabled, setVibrationEnabled] = useState(false);
-  const [longBreaksEnabled, setLongBreaksEnabled] = useState(false);
-  const [workDuration, setWorkDuration] = useState('25');
-  const [breakDuration, setBreakDuration] = useState('5');
+  const [notifications, setNotifications] = useState(false);
+  const [vibration, setVibration] = useState(false);
+  const [longBreaks, setLongBreaks] = useState(false);
+  const [work, setWork] = useState('25');
+  const [breakTime, setBreakTime] = useState('5');
 
   useEffect(() => {
     (async () => {
-      const notifs = await AsyncStorage.getItem('notifications');
-      const vibrate = await AsyncStorage.getItem('vibration');
-      const longBreaks = await AsyncStorage.getItem('longBreaks');
-      const work = await AsyncStorage.getItem('pomodoro-work');
-      const brk = await AsyncStorage.getItem('pomodoro-break');
-
-      if (notifs) setNotificationsEnabled(notifs === 'true');
-      if (vibrate) setVibrationEnabled(vibrate === 'true');
-      if (longBreaks) setLongBreaksEnabled(longBreaks === 'true');
-      if (work) setWorkDuration(work);
-      if (brk) setBreakDuration(brk);
+      setNotifications((await AsyncStorage.getItem('notifications')) === 'true');
+      setVibration((await AsyncStorage.getItem('vibration')) === 'true');
+      setLongBreaks((await AsyncStorage.getItem('longBreaks')) === 'true');
+      setWork((await AsyncStorage.getItem('pomodoro-work')) || '25');
+      setBreakTime((await AsyncStorage.getItem('pomodoro-break')) || '5');
     })();
   }, []);
 
-  const toggle = async (key: string, value: boolean, setter: Function) => {
-    setter(value);
-    await AsyncStorage.setItem(key, value.toString());
-  };
-
   const saveDurations = async () => {
-    await AsyncStorage.setItem('pomodoro-work', workDuration);
-    await AsyncStorage.setItem('pomodoro-break', breakDuration);
-    Alert.alert('Saved', 'Pomodoro durations updated.');
-  };
-
-  const resetSessions = async () => {
-    await AsyncStorage.setItem('pomodoroSessions', '0');
-    Alert.alert('Reset', 'Pomodoro session count reset.');
-  };
-
-  const resetAnalytics = async () => {
-    // Optional: implement additional keys here
-    Alert.alert('Reset', 'Analytics reset placeholder.');
-  };
-
-  const handleLogout = async () => {
-    await clearToken();
-    router.replace('/');
+    await AsyncStorage.setItem('pomodoro-work', work);
+    await AsyncStorage.setItem('pomodoro-break', breakTime);
+    Alert.alert('Saved', 'Durations updated.');
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Settings</Text>
+    <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
+      <View style={styles.overlay}>
+        <Text style={styles.heading}>⚙️ Settings</Text>
+        {[
+          { label: 'Push Notifications', state: notifications, setter: setNotifications, key: 'notifications' },
+          { label: 'Vibration', state: vibration, setter: setVibration, key: 'vibration' },
+          { label: 'Long Breaks', state: longBreaks, setter: setLongBreaks, key: 'longBreaks' },
+        ].map(({ label, state, setter, key }) => (
+          <View key={key} style={styles.row}>
+            <Text style={styles.label}>{label}</Text>
+            <Switch
+              value={state}
+              onValueChange={val => {
+                setter(val);
+                AsyncStorage.setItem(key, val.toString());
+              }}
+            />
+          </View>
+        ))}
 
-      {/* Notifications Toggle */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Push Notifications</Text>
-        <Switch
-          value={notificationsEnabled}
-          onValueChange={val => toggle('notifications', val, setNotificationsEnabled)}
-        />
-      </View>
-
-      {/* Vibration Toggle */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Vibrate on Completion</Text>
-        <Switch
-          value={vibrationEnabled}
-          onValueChange={val => toggle('vibration', val, setVibrationEnabled)}
-        />
-      </View>
-
-      {/* Long Breaks Toggle */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Enable Long Breaks</Text>
-        <Switch
-          value={longBreaksEnabled}
-          onValueChange={val => toggle('longBreaks', val, setLongBreaksEnabled)}
-        />
-      </View>
-
-      {/* Pomodoro Durations */}
-      <View style={styles.section}>
-        <Text style={styles.label}>Pomodoro Durations</Text>
+        <Text style={styles.label}>Work Duration (min)</Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
-          value={workDuration}
-          onChangeText={setWorkDuration}
-          placeholder="Work (min)"
+          value={work}
+          onChangeText={setWork}
         />
+        <Text style={styles.label}>Break Duration (min)</Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
-          value={breakDuration}
-          onChangeText={setBreakDuration}
-          placeholder="Break (min)"
+          value={breakTime}
+          onChangeText={setBreakTime}
         />
+
         <TouchableOpacity style={styles.saveButton} onPress={saveDurations}>
-          <Text style={styles.saveText}>Save Durations</Text>
+          <Text style={styles.saveText}>Save</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={async () => {
+          await clearToken();
+          router.replace('/');
+        }}>
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Navigation & Reset */}
-      <TouchableOpacity
-        style={[styles.button, styles.analyticsButton]}
-        onPress={() => router.push('/analytics')}
-      >
-        <Text style={styles.analyticsText}>View Analytics</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.resetButton} onPress={resetSessions}>
-        <Text style={styles.resetText}>Reset Pomodoro Sessions</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.resetButton} onPress={resetAnalytics}>
-        <Text style={styles.resetText}>Reset Analytics</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 24 },
-  heading: { fontSize: 24, fontWeight: 'bold', marginBottom: 24 },
+  bg: { flex: 1 },
+  overlay: { flex: 1, padding: 24 },
+  heading: { color: '#fff', fontSize: 26, fontWeight: 'bold', marginBottom: 24 },
   row: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
+    flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12,
   },
-  label: { fontSize: 16, fontWeight: '500' },
-  section: { marginTop: 20, marginBottom: 24 },
+  label: { color: '#fff', fontSize: 16, marginBottom: 4 },
   input: {
-    borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 8,
-    marginBottom: 10, fontSize: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: '#fff',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   saveButton: {
-    backgroundColor: '#3B82F6', padding: 12, borderRadius: 8,
+    backgroundColor: '#10B981', padding: 12, borderRadius: 10, marginTop: 8,
   },
-  saveText: { color: '#fff', fontWeight: 'bold', textAlign: 'center' },
-  analyticsButton: { backgroundColor: '#F3F4F6', marginBottom: 12, padding: 12, borderRadius: 8 },
-  analyticsText: { textAlign: 'center', color: '#3B82F6', fontWeight: '500' },
-  resetButton: { backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, marginBottom: 10 },
-  resetText: { textAlign: 'center', color: '#374151', fontWeight: '500' },
-  button: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8 },
-  logoutButton: { backgroundColor: '#EF4444', marginTop: 12 },
-  logoutText: { textAlign: 'center', color: '#fff', fontWeight: 'bold' },
+  saveText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+  logoutButton: {
+    backgroundColor: '#EF4444', padding: 12, borderRadius: 10, marginTop: 20,
+  },
+  logoutText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
 });

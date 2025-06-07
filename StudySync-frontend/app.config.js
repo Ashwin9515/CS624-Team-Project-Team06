@@ -8,7 +8,6 @@ export default {
     icon: "./assets/images/icon.png",
     scheme: "studysyncfrontend",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
     platforms: ["ios", "android", "web"],
     ios: {
       supportsTablet: true
@@ -17,8 +16,7 @@ export default {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff"
-      },
-      edgeToEdgeEnabled: true
+      }
     },
     web: {
       bundler: "metro",

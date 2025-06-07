@@ -4,16 +4,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   StyleSheet,
   ImageBackground,
+  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { getToken, saveToken } from '../../utils/auth';
+import axios from 'axios';
 
 export default function Login() {
   const router = useRouter();
@@ -44,111 +44,97 @@ export default function Login() {
 
   if (loading) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#fff" />
       </View>
     );
   }
 
   return (
     <ImageBackground
-      source={require('../../assets/studysync-bg.png')} // Make sure this image exists
-      style={styles.background}
+      source={require('../../assets/studysync.png')}
+      style={styles.bg}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.overlay}
-      >
-        <View style={styles.card}>
-          <Text style={styles.title}>Login</Text>
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Text style={styles.title}>Welcome Back 👋</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
-            placeholderTextColor="#888"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="#888"
-          />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          placeholderTextColor="#ccc"
+          value={username}
+          onChangeText={setUsername}
+        />
 
-          <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-            <Text style={styles.loginText}>Login</Text>
-          </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#ccc"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-          <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerLink}>
-            <Text style={styles.registerText}>Don’t have an account? Register</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={handleLogin} style={styles.button}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/register')}>
+          <Text style={styles.link}>Don't have an account? Register</Text>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
+  bg: { flex: 1 },
+  centered: {
     flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlay: {
     flex: 1,
-    justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-  },
-  card: {
-    backgroundColor: '#ffffffee',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  loaderContainer: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
   },
   title: {
+    color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1E40AF',
-    marginBottom: 20,
+    marginBottom: 24,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   input: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    color: '#fff',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ffffff40',
+  },
+  button: {
+    backgroundColor: '#3B82F6',
     padding: 12,
     borderRadius: 10,
-    marginBottom: 12,
-    backgroundColor: '#fff',
-  },
-  loginButton: {
-    backgroundColor: '#2563EB',
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
     marginTop: 4,
   },
-  loginText: {
+  buttonText: {
     color: '#fff',
+    textAlign: 'center',
     fontWeight: '600',
   },
-  registerLink: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  registerText: {
-    color: '#2563EB',
-    fontWeight: '500',
+  link: {
+    marginTop: 12,
+    color: '#fff',
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });

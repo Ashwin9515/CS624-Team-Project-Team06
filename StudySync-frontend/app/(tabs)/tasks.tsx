@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   Alert,
   Button,
-  TextInput,
-  RefreshControl,
+  ImageBackground,
 } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
@@ -18,7 +18,6 @@ export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [groupBy, setGroupBy] = useState<'status' | 'date'>('status');
   const [search, setSearch] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -33,12 +32,6 @@ export default function Tasks() {
     }
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchTasks();
-    setRefreshing(false);
-  };
-
   const markComplete = async (taskId: string) => {
     try {
       await axios.patch(`${process.env.EXPO_PUBLIC_API}/tasks/${taskId}`, {
@@ -47,15 +40,6 @@ export default function Tasks() {
       fetchTasks();
     } catch (err) {
       Alert.alert('Error', 'Failed to update task.');
-    }
-  };
-
-  const deleteTask = async (taskId: string) => {
-    try {
-      await axios.delete(`${process.env.EXPO_PUBLIC_API}/tasks/${taskId}`);
-      fetchTasks();
-    } catch (err) {
-      Alert.alert('Error', 'Failed to delete task.');
     }
   };
 
@@ -75,11 +59,8 @@ export default function Tasks() {
   };
 
   const filterBySearch = (list: any[]) => {
-    return list.filter(
-      (t) =>
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.subject?.toLowerCase().includes(search.toLowerCase())
-    );
+    if (!search.trim()) return list;
+    return list.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()));
   };
 
   const groupByStatus = () => {
@@ -118,13 +99,7 @@ export default function Tasks() {
             !item.completed &&
             Alert.alert('Mark as complete?', item.title, [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Complete', onPress: () => markComplete(item._id) },
-            ])
-          }
-          onLongPress={() =>
-            Alert.alert('Delete task?', item.title, [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete', onPress: () => deleteTask(item._id), style: 'destructive' },
+              { text: 'Mark Complete', onPress: () => markComplete(item._id) },
             ])
           }
         >
@@ -138,63 +113,66 @@ export default function Tasks() {
   );
 
   return (
-    <View style={styles.wrapper}>
-      <TextInput
-        style={styles.search}
-        placeholder="Search tasks..."
-        value={search}
-        onChangeText={setSearch}
-      />
-      <View style={styles.filters}>
-        <Button
-          title="Group by Status"
-          onPress={() => setGroupBy('status')}
-          color={groupBy === 'status' ? '#2563EB' : '#9CA3AF'}
+    <ImageBackground source={require('../../assets/studysync.png')} style={{ flex: 1 }}>
+      <View style={styles.wrapper}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search tasks..."
+          placeholderTextColor="#ccc"
+          value={search}
+          onChangeText={setSearch}
         />
-        <Button
-          title="Group by Date"
-          onPress={() => setGroupBy('date')}
-          color={groupBy === 'date' ? '#2563EB' : '#9CA3AF'}
+
+        <View style={styles.filters}>
+          <Button
+            title="Group by Status"
+            onPress={() => setGroupBy('status')}
+            color={groupBy === 'status' ? '#2563EB' : '#9CA3AF'}
+          />
+          <Button
+            title="Group by Date"
+            onPress={() => setGroupBy('date')}
+            color={groupBy === 'date' ? '#2563EB' : '#9CA3AF'}
+          />
+        </View>
+
+        <FlatList
+          data={Object.keys(groupedTasks)}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => renderGroup(item, groupedTasks[item])}
         />
       </View>
-
-      <FlatList
-        data={Object.keys(groupedTasks)}
-        keyExtractor={(item) => item}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        renderItem={({ item }) => renderGroup(item, groupedTasks[item])}
-      />
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#fff' },
-  list: { padding: 16 },
-  search: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
+  wrapper: { flex: 1, padding: 16 },
+  searchInput: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: '#fff',
     borderRadius: 8,
     padding: 10,
+    marginBottom: 12,
   },
+  list: { paddingBottom: 80 },
   filters: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    marginVertical: 12,
+    marginBottom: 12,
   },
   group: { marginBottom: 24 },
   groupTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 8,
   },
   taskItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#ffffff30',
   },
   taskRow: {
     flexDirection: 'row',
@@ -205,6 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     flex: 1,
+    color: '#fff',
     marginRight: 10,
   },
   badge: {

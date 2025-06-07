@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import {
   View,
-  TextInput,
-  Button,
   Text,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
   ImageBackground,
   Alert,
 } from 'react-native';
-import axios from 'axios';
 import { router } from 'expo-router';
-import Constants from 'expo-constants';
-
-const API = Constants.expoConfig?.extra?.apiUrl ?? '';
+import API from '../../utils/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -20,8 +18,8 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(`${API}/auth/login`, { email, password });
-      // Store token or session info (e.g. AsyncStorage)
+      const res = await API.post('/auth/login', { email, password });
+      await AsyncStorage.setItem('token', res.data.token);
       router.replace('/home');
     } catch (err: any) {
       Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials');
@@ -35,29 +33,32 @@ export default function Login() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>🔐 Login</Text>
+        <Text style={styles.title}>Login</Text>
 
-        <Text style={styles.label}>Email</Text>
         <TextInput
-          onChangeText={setEmail}
+          style={styles.input}
+          placeholder="Email"
           value={email}
-          placeholder="you@example.com"
-          style={styles.input}
-          autoCapitalize="none"
+          onChangeText={setEmail}
+          placeholderTextColor="#ccc"
         />
 
-        <Text style={styles.label}>Password</Text>
         <TextInput
-          onChangeText={setPassword}
-          value={password}
-          secureTextEntry
-          placeholder="••••••••"
           style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor="#ccc"
         />
 
-        <View style={styles.buttonContainer}>
-          <Button title="Login" onPress={handleLogin} color="#2563EB" />
-        </View>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginText}>Login</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/register')} style={styles.link}>
+          <Text style={styles.linkText}>Don’t have an account? Register</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -66,34 +67,48 @@ export default function Login() {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
+    justifyContent: 'center',
   },
   overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    gap: 16,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
-    color: '#1E3A8A',
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 4,
-    color: '#111827',
+    color: '#fff',
+    marginBottom: 12,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   input: {
+    width: '100%',
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 8,
+    borderColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     padding: 12,
-    marginBottom: 16,
-    backgroundColor: '#fff',
+    borderRadius: 8,
+    color: '#fff',
   },
-  buttonContainer: {
+  loginButton: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
     marginTop: 12,
+  },
+  loginText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  link: {
+    marginTop: 12,
+  },
+  linkText: {
+    color: '#cbd5e1',
+    textDecorationLine: 'underline',
   },
 });

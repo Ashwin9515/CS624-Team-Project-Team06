@@ -1,38 +1,26 @@
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
-import { useEffect, useState } from 'react';
 import axios from 'axios';
-import React from 'react';
 
 export default function Analytics() {
-  const [stats, setStats] = useState<{
-    completed: number;
-    weeklyCount: number;
-    totalPomodoro: number;
-  } | null>(null);
+  const [stats, setStats] = useState<{ completed: number; weeklyCount: number; totalPomodoro: number } | null>(null);
 
   useEffect(() => {
-    axios
-      .get(`${process.env.EXPO_PUBLIC_API}/analytics`)
+    axios.get(`${process.env.EXPO_PUBLIC_API}/analytics`)
       .then(res => setStats(res.data))
-      .catch(err => console.error('Failed to load analytics:', err));
+      .catch(console.error);
   }, []);
 
   return (
-    <ImageBackground
-      source={require('../../assets/studysync-bg.png')}
-      style={styles.bg}
-      resizeMode="cover"
-    >
+    <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
       <View style={styles.overlay}>
         <Text style={styles.title}>📊 Study Analytics</Text>
-        {stats ? (
+        {stats && (
           <>
-            <Text style={styles.statText}>✅ Tasks Completed: {stats.completed}</Text>
-            <Text style={styles.statText}>📅 Tasks This Week: {stats.weeklyCount}</Text>
-            <Text style={styles.statText}>⏱️ Total Pomodoro Time: {stats.totalPomodoro} mins</Text>
+            <Text style={styles.stat}>✅ Tasks Completed: {stats.completed}</Text>
+            <Text style={styles.stat}>📅 This Week: {stats.weeklyCount}</Text>
+            <Text style={styles.stat}>⏱ Total Pomodoro: {stats.totalPomodoro} mins</Text>
           </>
-        ) : (
-          <Text style={styles.statText}>Loading...</Text>
         )}
       </View>
     </ImageBackground>
@@ -40,26 +28,18 @@ export default function Analytics() {
 }
 
 const styles = StyleSheet.create({
-  bg: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 24,
-    justifyContent: 'center',
-  },
+  bg: { flex: 1 },
+  overlay: { flex: 1, padding: 24 },
   title: {
+    color: '#fff',
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 24,
     textAlign: 'center',
-    color: '#1E3A8A',
   },
-  statText: {
+  stat: {
+    color: '#fff',
     fontSize: 18,
     marginBottom: 12,
-    color: '#111827',
-    textAlign: 'center',
   },
 });

@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <ImageBackground
       source={require('../../assets/studysync.png')}
@@ -9,10 +12,28 @@ export default function Home() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>📚 Welcome to StudySync</Text>
-        <Text style={styles.subtitle}>Plan. Focus. Succeed.</Text>
+        <Text style={styles.logo}>📘 StudySync</Text>
 
-        {/* TODO: Add summary tiles, quick access buttons, task preview, etc. */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/dashboard')}
+        >
+          <Text style={styles.buttonText}>Dashboard</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/tasks')}
+        >
+          <Text style={styles.buttonText}>Tasks</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/chatbot')}
+        >
+          <Text style={styles.buttonText}>Chat with StudyBot</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -21,23 +42,36 @@ export default function Home() {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
-    width: '100%',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.92)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
   },
-  title: {
+  overlay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    gap: 16,
+  },
+  logo: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1E3A8A',
-    marginBottom: 8,
+    color: '#fff',
+    marginBottom: 20,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#374151',
+  button: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });

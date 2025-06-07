@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  ImageBackground,
-  Text,
-} from 'react-native';
+import { View, StyleSheet, ImageBackground, Text } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -36,26 +31,24 @@ export default function TaskCalendar() {
 
   return (
     <ImageBackground
-      source={require('../../assets/studysync-bg.png')}
+      source={require('../../assets/studysync.png')}
       style={styles.bg}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
-        <Text style={styles.header}>📅 Task Calendar</Text>
+      <View style={styles.wrapper}>
+        <Text style={styles.title}>📅 Study Calendar</Text>
         <Calendar
           markedDates={markedDates}
           onDayPress={handleDayPress}
-          style={styles.calendar}
           theme={{
+            backgroundColor: 'transparent',
+            calendarBackground: 'transparent',
             todayTextColor: '#2563EB',
             selectedDayBackgroundColor: '#2563EB',
             arrowColor: '#2563EB',
-            textDayFontWeight: '500',
-            textMonthFontWeight: 'bold',
-            textDayHeaderFontWeight: '600',
-            textDayFontSize: 16,
-            textMonthFontSize: 18,
-            textDayHeaderFontSize: 14,
+            monthTextColor: '#fff',
+            textSectionTitleColor: '#fff',
+            dayTextColor: '#fff',
           }}
         />
       </View>
@@ -66,22 +59,19 @@ export default function TaskCalendar() {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
+    justifyContent: 'center',
   },
-  overlay: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+  wrapper: {
+    padding: 20,
   },
-  header: {
-    fontSize: 24,
+  title: {
+    fontSize: 22,
+    color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#1E3A8A',
-    marginBottom: 16,
-  },
-  calendar: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 3,
+    marginBottom: 12,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingVertical: 6,
+    borderRadius: 8,
   },
 });
