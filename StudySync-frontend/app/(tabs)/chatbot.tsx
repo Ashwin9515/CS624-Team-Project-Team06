@@ -7,7 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ImageBackground,
 } from 'react-native';
 import axios from 'axios';
 
@@ -32,37 +33,61 @@ export default function Chatbot() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 12 }}>
-        {messages.map((m, i) => (
-          <View
-            key={i}
-            style={[
-              styles.messageBubble,
-              m.role === 'user' ? styles.userMessage : styles.botMessage
-            ]}
-          >
-            <Text style={styles.messageText}>{m.content}</Text>
-          </View>
-        ))}
-      </ScrollView>
-      <View style={styles.inputRow}>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          placeholder="Ask me anything..."
-          style={styles.input}
-        />
-        <Button title="Send" onPress={handleSend} />
-      </View>
-    </KeyboardAvoidingView>
+    <ImageBackground
+      source={require('../../assets/studysync.png')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={80}
+      >
+        <Text style={styles.title}>💬 Chat with StudyBot</Text>
+
+        <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 12 }}>
+          {messages.map((m, i) => (
+            <View
+              key={i}
+              style={[
+                styles.messageBubble,
+                m.role === 'user' ? styles.userMessage : styles.botMessage,
+              ]}
+            >
+              <Text style={styles.messageText}>{m.content}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={styles.inputRow}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Ask me anything..."
+            style={styles.input}
+          />
+          <Button title="Send" onPress={handleSend} />
+        </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     padding: 16,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 12,
+    color: '#1E3A8A',
   },
   messages: {
     flex: 1,
@@ -88,7 +113,6 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   input: {
     flex: 1,
@@ -97,5 +121,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginRight: 8,
+    backgroundColor: '#fff',
   },
 });

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ImageBackground,
+  Text,
+} from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -30,20 +35,53 @@ export default function TaskCalendar() {
   };
 
   return (
-    <View style={styles.container}>
-      <Calendar
-        markedDates={markedDates}
-        onDayPress={handleDayPress}
-        theme={{
-          todayTextColor: '#2563EB',
-          selectedDayBackgroundColor: '#2563EB',
-          arrowColor: '#2563EB',
-        }}
-      />
-    </View>
+    <ImageBackground
+      source={require('../../assets/studysync-bg.png')}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <Text style={styles.header}>📅 Task Calendar</Text>
+        <Calendar
+          markedDates={markedDates}
+          onDayPress={handleDayPress}
+          style={styles.calendar}
+          theme={{
+            todayTextColor: '#2563EB',
+            selectedDayBackgroundColor: '#2563EB',
+            arrowColor: '#2563EB',
+            textDayFontWeight: '500',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '600',
+            textDayFontSize: 16,
+            textMonthFontSize: 18,
+            textDayHeaderFontSize: 14,
+          }}
+        />
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+  bg: {
+    flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#1E3A8A',
+    marginBottom: 16,
+  },
+  calendar: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
+  },
 });

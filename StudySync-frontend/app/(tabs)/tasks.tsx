@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Alert,
   Button,
+  TextInput,
+  RefreshControl,
 } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
@@ -15,6 +17,8 @@ export default function Tasks() {
   const { date } = useLocalSearchParams();
   const [tasks, setTasks] = useState([]);
   const [groupBy, setGroupBy] = useState<'status' | 'date'>('status');
+  const [search, setSearch] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -29,6 +33,12 @@ export default function Tasks() {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTasks();
+    setRefreshing(false);
+  };
+
   const markComplete = async (taskId: string) => {
     try {
       await axios.patch(`${process.env.EXPO_PUBLIC_API}/tasks/${taskId}`, {
@@ -37,6 +47,15 @@ export default function Tasks() {
       fetchTasks();
     } catch (err) {
       Alert.alert('Error', 'Failed to update task.');
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      await axios.delete(`${process.env.EXPO_PUBLIC_API}/tasks/${taskId}`);
+      fetchTasks();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete task.');
     }
   };
 
@@ -55,9 +74,17 @@ export default function Tasks() {
     );
   };
 
+  const filterBySearch = (list: any[]) => {
+    return list.filter(
+      (t) =>
+        t.title.toLowerCase().includes(search.toLowerCase()) ||
+        t.subject?.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
   const groupByStatus = () => {
     const grouped = { Completed: [], Overdue: [], 'Due Soon': [] } as any;
-    for (const task of filterByDate(tasks)) {
+    for (const task of filterBySearch(filterByDate(tasks))) {
       if (task.completed) grouped.Completed.push(task);
       else if (new Date(task.dueDate) < new Date()) grouped.Overdue.push(task);
       else grouped['Due Soon'].push(task);
@@ -69,7 +96,7 @@ export default function Tasks() {
     const grouped = { Today: [], Upcoming: [], Past: [] } as any;
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
-    for (const task of filterByDate(tasks)) {
+    for (const task of filterBySearch(filterByDate(tasks))) {
       const dueDateStr = new Date(task.dueDate).toISOString().split('T')[0];
       if (dueDateStr === todayStr) grouped.Today.push(task);
       else if (new Date(task.dueDate) > now) grouped.Upcoming.push(task);
@@ -91,7 +118,13 @@ export default function Tasks() {
             !item.completed &&
             Alert.alert('Mark as complete?', item.title, [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Mark Complete', onPress: () => markComplete(item._id) },
+              { text: 'Complete', onPress: () => markComplete(item._id) },
+            ])
+          }
+          onLongPress={() =>
+            Alert.alert('Delete task?', item.title, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', onPress: () => deleteTask(item._id), style: 'destructive' },
             ])
           }
         >
@@ -106,6 +139,12 @@ export default function Tasks() {
 
   return (
     <View style={styles.wrapper}>
+      <TextInput
+        style={styles.search}
+        placeholder="Search tasks..."
+        value={search}
+        onChangeText={setSearch}
+      />
       <View style={styles.filters}>
         <Button
           title="Group by Status"
@@ -123,6 +162,7 @@ export default function Tasks() {
         data={Object.keys(groupedTasks)}
         keyExtractor={(item) => item}
         contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         renderItem={({ item }) => renderGroup(item, groupedTasks[item])}
       />
     </View>
@@ -132,6 +172,14 @@ export default function Tasks() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#fff' },
   list: { padding: 16 },
+  search: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+  },
   filters: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,13 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { getToken, saveToken } from '../../utils/auth';
-import React from 'react';
 
 export default function Login() {
   const router = useRouter();
@@ -42,74 +44,111 @@ export default function Login() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-        <Text style={styles.loginText}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerLink}>
-        <Text style={styles.registerText}>Don’t have an account? Register</Text>
-      </TouchableOpacity>
-    </View>
+    <ImageBackground
+      source={require('../../assets/studysync-bg.png')} // Make sure this image exists
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.overlay}
+      >
+        <View style={styles.card}>
+          <Text style={styles.title}>Login</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            placeholderTextColor="#888"
+          />
+
+          <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+            <Text style={styles.loginText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerLink}>
+            <Text style={styles.registerText}>Don’t have an account? Register</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
+    flex: 1,
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  card: {
+    backgroundColor: '#ffffffee',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  loaderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
     backgroundColor: '#fff',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 16,
+    color: '#1E40AF',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     padding: 12,
-    borderRadius: 8,
-    width: '100%',
+    borderRadius: 10,
     marginBottom: 12,
+    backgroundColor: '#fff',
   },
   loginButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#2563EB',
     paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 8,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 4,
   },
   loginText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   registerLink: {
     marginTop: 16,
+    alignItems: 'center',
   },
   registerText: {
     color: '#2563EB',
+    fontWeight: '500',
   },
 });
