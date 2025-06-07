@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import API from '../utils/api';
+import API from '../../utils/api';
+;
 
 export default function Register() {
   const [email, setEmail] = useState('');

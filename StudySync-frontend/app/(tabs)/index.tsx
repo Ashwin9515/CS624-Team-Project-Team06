@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { getToken, saveToken } from '../../utils/auth';
+import React from 'react';
 
 export default function Login() {
   const router = useRouter();
@@ -26,41 +35,81 @@ export default function Login() {
       });
       await saveToken(res.data.token);
       router.replace('/home');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Login Failed', error.response?.data?.error || 'Invalid credentials');
     }
   };
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 justify-center items-center p-6 bg-white">
-      <Text className="text-3xl font-bold mb-4">Login</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
       <TextInput
-        className="border p-3 rounded w-full mb-3"
+        style={styles.input}
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        className="border p-3 rounded w-full mb-3"
+        style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity onPress={handleLogin} className="bg-blue-500 px-6 py-3 rounded mt-2">
-        <Text className="text-white font-bold">Login</Text>
+      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+        <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/register')} className="mt-4">
-        <Text className="text-blue-600">Don’t have an account? Register</Text>
+      <TouchableOpacity onPress={() => router.push('/register')} style={styles.registerLink}>
+        <Text style={styles.registerText}>Don’t have an account? Register</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    borderRadius: 8,
+    width: '100%',
+    marginBottom: 12,
+  },
+  loginButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  loginText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  registerLink: {
+    marginTop: 16,
+  },
+  registerText: {
+    color: '#2563EB',
+  },
+});
