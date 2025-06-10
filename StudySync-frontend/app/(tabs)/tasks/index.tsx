@@ -1,3 +1,4 @@
+// app/(tabs)/tasks/index.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -123,8 +124,16 @@ export default function Tasks() {
           }
         >
           <View style={styles.taskRow}>
-            <Text style={styles.taskTitle}>{item.title}</Text>
-            {renderStatusBadge(item)}
+            <View style={styles.taskContent}>
+              <Text style={styles.taskTitle}>{item.title}</Text>
+              {renderStatusBadge(item)}
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push(`/tasks/edit?id=${item._id}`)}
+              style={styles.editIcon}
+            >
+              <Ionicons name="create-outline" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       ))}
@@ -228,12 +237,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  taskContent: {
+    flex: 1,
+    marginRight: 8,
+  },
   taskTitle: {
     fontSize: 16,
     fontWeight: '500',
-    flex: 1,
     color: '#fff',
-    marginRight: 10,
   },
   badge: {
     fontSize: 12,
@@ -242,10 +253,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     color: '#fff',
+    marginTop: 4,
+    alignSelf: 'flex-start',
   },
   completed: { backgroundColor: '#10B981' },
   overdue: { backgroundColor: '#EF4444' },
   dueSoon: { backgroundColor: '#F59E0B' },
+  editIcon: {
+    padding: 6,
+  },
   fab: {
     position: 'absolute',
     bottom: 24,

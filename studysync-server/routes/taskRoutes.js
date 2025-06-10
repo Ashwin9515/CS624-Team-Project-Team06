@@ -5,11 +5,12 @@ import {
   updateTask,
   deleteTask,
 } from '../controllers/taskController.js';
-import authMiddleware from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authMiddleware); // Protect all task routes
+// Use the correct middleware name
+router.use(protect); // Protect all task routes
 
 router.get('/', getTasks);
 router.post('/', createTask);

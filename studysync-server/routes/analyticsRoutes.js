@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import Task from '../models/Task.js';
-import User from '../models/User.js'; // optional if you track Pomodoro per user
+import User from '../models/User.js';
 import moment from 'moment';
 import fs from 'fs';
 

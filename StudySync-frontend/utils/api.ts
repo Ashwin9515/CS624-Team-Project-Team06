@@ -8,16 +8,11 @@ if (!apiUrl) {
   throw new Error('Missing API URL in app.config.js -> extra.apiUrl');
 }
 
-const API = axios.create({
-  baseURL: apiUrl,
-});
+const API = axios.create({ baseURL: apiUrl });
 
-// ✅ Attach token to every request
 API.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
