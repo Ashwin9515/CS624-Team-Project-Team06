@@ -39,7 +39,7 @@ export default {
       typedRoutes: true
     },
     extra: {
-      apiUrl: "https://shiny-space-succotash-v66j55qqrpqq34g7-5000.app.github.dev"
+      apiUrl: "https://psychic-train-g44vpp77rqr9fv44x-5000.app.github.dev"
     }
   }
 };

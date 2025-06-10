@@ -46,10 +46,16 @@ router.get('/history', protect, async (req, res) => {
 // DELETE /chat/history → clear history
 router.delete('/history', protect, async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.user._id, { $set: { chatHistory: [] } });
-    res.json({ message: 'History cleared' });
-  } catch {
-    res.status(500).json({ error: 'Failed to delete history' });
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    user.chatHistory = [];
+    await user.save();
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error('Error clearing chat history:', err);
+    res.status(500).json({ error: 'Failed to clear history' });
   }
 });
 

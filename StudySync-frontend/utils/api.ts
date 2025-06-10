@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
 const API = axios.create({
-  baseURL: Constants.expoConfig?.extra?.apiUrl || 'http://localhost:5000',
+  baseURL: Constants.expoConfig?.extra?.apiUrl || 'https://psychic-train-g44vpp77rqr9fv44x-5000.app.github.dev',
 });
 
 API.interceptors.request.use(async (config) => {

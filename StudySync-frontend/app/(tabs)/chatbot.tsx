@@ -83,23 +83,26 @@ export default function Chatbot() {
   };
 
   const clearChat = async () => {
-    Alert.alert('Clear Chat', 'Are you sure you want to delete all messages?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        onPress: async () => {
-          try {
-            await API.delete('/chat/history');
-            setMessages([]);
-          } catch (err) {
-            console.error('Clear chat error:', err);
-            Alert.alert('Error', 'Could not clear chat.');
-          }
-        },
-        style: 'destructive',
+  Alert.alert('Clear Chat', 'Are you sure you want to delete all messages?', [
+    { text: 'Cancel', style: 'cancel' },
+    {
+      text: 'Clear',
+      onPress: async () => {
+        try {
+          await API.delete('/chat/history');
+          setMessages([]);
+          await new Promise((r) => setTimeout(r, 200)); // wait briefly
+          fetchHistory(); // recheck from backend
+        } catch (err) {
+          console.error('Clear chat error:', err);
+          Alert.alert('Error', 'Could not clear chat.');
+        }
       },
-    ]);
-  };
+      style: 'destructive',
+    },
+  ]);
+};
+
 
   const formatTime = (timestamp?: string) =>
     timestamp ? moment(timestamp).format('h:mm A') : '';

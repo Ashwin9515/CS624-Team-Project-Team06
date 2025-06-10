@@ -1,14 +1,8 @@
 import axios from 'axios';
 
-// Use 'phi' as the model name when using Phi-2 on Ollama
-const model = process.env.OLLAMA_MODEL || 'phi';
+const model = process.env.OLLAMA_MODEL || 'tinyllama'; // default to smaller model
+const AI_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 
-// Detect environment and set AI base URL
-const AI_BASE_URL =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:11434'
-    : 'https://shiny-space-succotash-v66j55qqrpqq34g7-11434.app.github.dev/'; 
-    
 export const queryAI = async (prompt) => {
   try {
     const response = await axios.post(`${AI_BASE_URL}/api/generate`, {
@@ -17,9 +11,13 @@ export const queryAI = async (prompt) => {
       stream: false,
     });
 
-    return response.data.response;
+    if (!response.data?.response) {
+      throw new Error('Invalid AI response');
+    }
+
+    return response.data.response.trim();
   } catch (err) {
-    console.error('Phi-2 AI error:', err.message);
+    console.error('AI error:', err.message);
     return '⚠️ AI service is currently unavailable.';
   }
 };
