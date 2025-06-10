@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, Dimensions, Alert, Vibration } from 're
 import { LinearGradient } from 'expo-linear-gradient';
 import { Svg, Circle } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API from '../../utils/api';
 
 const { width } = Dimensions.get('window');
 const size = width * 0.7;
@@ -14,7 +15,7 @@ export default function Pomodoro() {
   const [seconds, setSeconds] = useState(1500); // default 25 min
   const [workDuration, setWorkDuration] = useState(1500);
   const [breakDuration, setBreakDuration] = useState(300);
-  const [longBreakDuration, setLongBreakDuration] = useState(900); // 15 min
+  const [longBreakDuration, setLongBreakDuration] = useState(900);
   const [sessionCount, setSessionCount] = useState(0);
   const [running, setRunning] = useState(false);
   const [onBreak, setOnBreak] = useState(false);
@@ -58,9 +59,7 @@ export default function Pomodoro() {
     clearInterval(intervalRef.current as NodeJS.Timeout);
     setRunning(false);
 
-    if (vibrationEnabled) {
-      Vibration.vibrate();
-    }
+    if (vibrationEnabled) Vibration.vibrate();
 
     if (onBreak) {
       setOnBreak(false);
@@ -70,6 +69,12 @@ export default function Pomodoro() {
       const newCount = sessionCount + 1;
       setSessionCount(newCount);
       await AsyncStorage.setItem('pomodoroSessions', newCount.toString());
+
+      try {
+        await API.post('/pomodoro/log', { minutes: workDuration / 60 });
+      } catch (err) {
+        console.warn('Pomodoro log failed', err);
+      }
 
       setOnBreak(true);
       if (longBreaksEnabled && newCount % 4 === 0) {

@@ -1,25 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
-import axios from 'axios';
+import { View, Text, StyleSheet, ImageBackground, ActivityIndicator, Alert } from 'react-native';
+import API from '../../utils/api';
 
 export default function Analytics() {
   const [stats, setStats] = useState<{ completed: number; weeklyCount: number; totalPomodoro: number } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${process.env.EXPO_PUBLIC_API}/analytics`)
+    API.get('/analytics')
       .then(res => setStats(res.data))
-      .catch(console.error);
+      .catch(err => {
+        console.error(err);
+        Alert.alert('Error', 'Failed to load analytics.');
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  const formatPomodoroTime = (total: number) => {
+    const hrs = Math.floor(total / 60);
+    const mins = total % 60;
+    return `${hrs > 0 ? `${hrs}h ` : ''}${mins}m`;
+  };
 
   return (
     <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
       <View style={styles.overlay}>
         <Text style={styles.title}>📊 Study Analytics</Text>
-        {stats && (
+
+        {loading && <ActivityIndicator size="large" color="#fff" />}
+        {!loading && stats && (
           <>
             <Text style={styles.stat}>✅ Tasks Completed: {stats.completed}</Text>
             <Text style={styles.stat}>📅 This Week: {stats.weeklyCount}</Text>
-            <Text style={styles.stat}>⏱ Total Pomodoro: {stats.totalPomodoro} mins</Text>
+            <Text style={styles.stat}>⏱ Total Pomodoro: {formatPomodoroTime(stats.totalPomodoro)}</Text>
           </>
         )}
       </View>

@@ -1,26 +1,52 @@
 import express from 'express';
-import { queryAI } from '../services/aiService.js';
+import { protect } from '../middleware/authMiddleware.js';
+import ChatMessage from '../models/ChatMessage.js';
+import { queryAI } from '../controllers/chatController.js';
 
 const router = express.Router();
 
-// Optional: Health check or basic GET response
-router.get('/', (req, res) => {
-  res.send('Chat endpoint is running');
-});
-
-// Main POST route to interact with AI
-router.post('/', async (req, res) => {
+// POST /chat → generate response + save
+router.post('/', protect, async (req, res) => {
   const { prompt } = req.body;
 
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' });
+  if (!prompt?.trim()) {
+    return res.status(400).json({ error: 'Prompt is required.' });
   }
 
   try {
     const response = await queryAI(prompt);
-    res.json({ response });
-  } catch (error) {
-    res.status(500).json({ error: 'AI model failed to respond.' });
+
+    // Save to DB
+    const message = await ChatMessage.create({
+      user: req.user._id,
+      prompt,
+      response,
+    });
+
+    res.json({ response: message.response });
+  } catch (err) {
+    console.error('Chat error:', err);
+    res.status(500).json({ error: 'Failed to get AI response' });
+  }
+});
+
+// GET /chat/history → fetch user chat
+router.get('/history', protect, async (req, res) => {
+  try {
+    const history = await ChatMessage.find({ user: req.user._id }).sort('createdAt');
+    res.json(history);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
+// DELETE /chat/history → clear history
+router.delete('/history', protect, async (req, res) => {
+  try {
+    await ChatMessage.deleteMany({ user: req.user._id });
+    res.json({ message: 'History cleared' });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete history' });
   }
 });
 

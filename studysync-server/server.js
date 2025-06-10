@@ -4,6 +4,8 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import taskRoutes from './routes/taskRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import pomodoroRoutes from './routes/pomodoroRoutes.js';
 
 // Load environment variables from .env
 dotenv.config();
@@ -26,6 +28,8 @@ app.get('/api', (req, res) => {
 // API Routes
 app.use('/api/tasks', taskRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/pomodoro', pomodoroRoutes);
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

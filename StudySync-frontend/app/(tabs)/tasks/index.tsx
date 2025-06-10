@@ -9,9 +9,9 @@ import {
   Alert,
   ImageBackground,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
-import API from '../../utils/api';
+import { Ionicons } from '@expo/vector-icons';
+import API from '../../../utils/api';
 
 export default function Tasks() {
   const { date } = useLocalSearchParams();
@@ -34,12 +34,19 @@ export default function Tasks() {
 
   const markComplete = async (taskId: string) => {
     try {
-      await API.patch(`/tasks/${taskId}`, {
-        completed: true,
-      });
+      await API.put(`/tasks/${taskId}`, { completed: true });
       fetchTasks();
     } catch (err) {
       Alert.alert('Error', 'Failed to update task.');
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      await API.delete(`/tasks/${taskId}`);
+      fetchTasks();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete task.');
     }
   };
 
@@ -97,6 +104,16 @@ export default function Tasks() {
         <TouchableOpacity
           key={item._id}
           style={styles.taskItem}
+          onLongPress={() =>
+            Alert.alert('Delete Task?', item.title, [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                onPress: () => deleteTask(item._id),
+                style: 'destructive',
+              },
+            ])
+          }
           onPress={() =>
             !item.completed &&
             Alert.alert('Mark as complete?', item.title, [
@@ -106,16 +123,8 @@ export default function Tasks() {
           }
         >
           <View style={styles.taskRow}>
-            <View style={styles.taskContent}>
-              <Text style={styles.taskTitle}>{item.title}</Text>
-              {renderStatusBadge(item)}
-            </View>
-            <TouchableOpacity
-              onPress={() => router.push(`/tasks/edit?id=${item._id}`)}
-              style={styles.editIcon}
-            >
-              <Ionicons name="create-outline" size={20} color="#fff" />
-            </TouchableOpacity>
+            <Text style={styles.taskTitle}>{item.title}</Text>
+            {renderStatusBadge(item)}
           </View>
         </TouchableOpacity>
       ))}
@@ -123,10 +132,7 @@ export default function Tasks() {
   );
 
   return (
-    <ImageBackground
-      source={require('../../assets/studysync.png')}
-      style={{ flex: 1 }}
-    >
+    <ImageBackground source={require('../../../assets/studysync.png')} style={{ flex: 1 }}>
       <View style={styles.wrapper}>
         <TextInput
           style={styles.searchInput}
@@ -163,6 +169,13 @@ export default function Tasks() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => renderGroup(item, groupedTasks[item])}
         />
+
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/tasks/add')}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -177,7 +190,6 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 12,
   },
-  list: { paddingBottom: 80 },
   filters: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
@@ -198,6 +210,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  list: { paddingBottom: 80 },
   group: { marginBottom: 24 },
   groupTitle: {
     fontSize: 18,
@@ -215,14 +228,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  taskContent: {
-    flex: 1,
-    marginRight: 8,
-  },
   taskTitle: {
     fontSize: 16,
     fontWeight: '500',
+    flex: 1,
     color: '#fff',
+    marginRight: 10,
   },
   badge: {
     fontSize: 12,
@@ -231,13 +242,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     color: '#fff',
-    marginTop: 4,
-    alignSelf: 'flex-start',
   },
   completed: { backgroundColor: '#10B981' },
   overdue: { backgroundColor: '#EF4444' },
   dueSoon: { backgroundColor: '#F59E0B' },
-  editIcon: {
-    padding: 6,
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: '#10B981',
+    padding: 16,
+    borderRadius: 50,
+    elevation: 5,
   },
 });

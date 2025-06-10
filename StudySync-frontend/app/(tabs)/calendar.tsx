@@ -9,20 +9,46 @@ export default function TaskCalendar() {
   const [markedDates, setMarkedDates] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`${process.env.EXPO_PUBLIC_API}/tasks`)
-      .then((res) => {
+    const fetchTasks = async () => {
+      try {
+        const res = await axios.get(`${process.env.EXPO_PUBLIC_API}/tasks`);
         const marks: any = {};
+
         res.data.forEach((task: any) => {
           const dateStr = new Date(task.dueDate).toISOString().split('T')[0];
-          marks[dateStr] = {
-            marked: true,
-            dotColor: task.completed ? '#10B981' : '#F59E0B',
-          };
+          const color = task.completed ? '#10B981' : '#F59E0B';
+
+          if (!marks[dateStr]) {
+            marks[dateStr] = {
+              marked: true,
+              dots: [{ color }],
+            };
+          } else {
+            const existingDots = marks[dateStr].dots.map((d: any) => d.color);
+            if (!existingDots.includes(color)) {
+              marks[dateStr].dots.push({ color });
+            }
+          }
         });
-        setMarkedDates(marks);
-      })
-      .catch((err) => console.error('Failed to load calendar tasks', err));
+
+        // Convert to react-native-calendars format
+        const finalMarks = Object.fromEntries(
+          Object.entries(marks).map(([date, { dots }]) => [
+            date,
+            {
+              marked: true,
+              dots,
+            },
+          ])
+        );
+
+        setMarkedDates(finalMarks);
+      } catch (err) {
+        console.error('Failed to load calendar tasks', err);
+      }
+    };
+
+    fetchTasks();
   }, []);
 
   const handleDayPress = (day: DateObject) => {
@@ -39,6 +65,7 @@ export default function TaskCalendar() {
         <Text style={styles.title}>📅 Study Calendar</Text>
         <Calendar
           markedDates={markedDates}
+          markingType={'multi-dot'}
           onDayPress={handleDayPress}
           theme={{
             backgroundColor: 'transparent',

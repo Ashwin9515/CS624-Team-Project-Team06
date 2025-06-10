@@ -28,26 +28,38 @@ export default function Settings() {
     Alert.alert('Saved', 'Durations updated.');
   };
 
+  const resetAnalytics = async () => {
+    await AsyncStorage.setItem('pomodoroSessions', '0');
+    Alert.alert('Reset', 'Pomodoro session count reset.');
+  };
+
+  const clearAllLocalData = async () => {
+    await AsyncStorage.clear();
+    Alert.alert('Cleared', 'All local settings and cache cleared.');
+    router.replace('/');
+  };
+
   return (
     <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
       <View style={styles.overlay}>
         <Text style={styles.heading}>⚙️ Settings</Text>
-        {[
-          { label: 'Push Notifications', state: notifications, setter: setNotifications, key: 'notifications' },
+
+        {[{ label: 'Push Notifications', state: notifications, setter: setNotifications, key: 'notifications' },
           { label: 'Vibration', state: vibration, setter: setVibration, key: 'vibration' },
-          { label: 'Long Breaks', state: longBreaks, setter: setLongBreaks, key: 'longBreaks' },
-        ].map(({ label, state, setter, key }) => (
-          <View key={key} style={styles.row}>
-            <Text style={styles.label}>{label}</Text>
-            <Switch
-              value={state}
-              onValueChange={val => {
-                setter(val);
-                AsyncStorage.setItem(key, val.toString());
-              }}
-            />
-          </View>
-        ))}
+          { label: 'Long Breaks', state: longBreaks, setter: setLongBreaks, key: 'longBreaks' }]
+          .map(({ label, state, setter, key }) => (
+            <View key={key} style={styles.row}>
+              <Text style={styles.label}>{label}</Text>
+              <Switch
+                value={state}
+                onValueChange={val => {
+                  setter(val);
+                  AsyncStorage.setItem(key, val.toString());
+                }}
+              />
+            </View>
+          ))
+        }
 
         <Text style={styles.label}>Work Duration (min)</Text>
         <TextInput
@@ -67,6 +79,15 @@ export default function Settings() {
         <TouchableOpacity style={styles.saveButton} onPress={saveDurations}>
           <Text style={styles.saveText}>Save</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.resetButton} onPress={resetAnalytics}>
+          <Text style={styles.resetText}>Reset Pomodoro Analytics</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.clearButton} onPress={clearAllLocalData}>
+          <Text style={styles.clearText}>Clear All Local Data</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={async () => {
           await clearToken();
           router.replace('/');
@@ -82,9 +103,7 @@ const styles = StyleSheet.create({
   bg: { flex: 1 },
   overlay: { flex: 1, padding: 24 },
   heading: { color: '#fff', fontSize: 26, fontWeight: 'bold', marginBottom: 24 },
-  row: {
-    flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12,
-  },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   label: { color: '#fff', fontSize: 16, marginBottom: 4 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -97,6 +116,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981', padding: 12, borderRadius: 10, marginTop: 8,
   },
   saveText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+  resetButton: {
+    backgroundColor: '#3B82F6', padding: 12, borderRadius: 10, marginTop: 12,
+  },
+  resetText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+  clearButton: {
+    backgroundColor: '#F59E0B', padding: 12, borderRadius: 10, marginTop: 12,
+  },
+  clearText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
   logoutButton: {
     backgroundColor: '#EF4444', padding: 12, borderRadius: 10, marginTop: 20,
   },

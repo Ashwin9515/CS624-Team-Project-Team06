@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,24 +7,43 @@ import {
   StyleSheet,
   ImageBackground,
   Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import API from '../../utils/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const token = await login(); // reuse AuthContext logic if it reads token on init
+      if (!token) setLoading(false);
+    })();
+  }, []);
 
   const handleLogin = async () => {
     try {
       const res = await API.post('/auth/login', { email, password });
-      await AsyncStorage.setItem('token', res.data.token);
-      router.replace('/home');
+      await login(res.data.token);
     } catch (err: any) {
       Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials');
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
 
   return (
     <ImageBackground
@@ -32,24 +51,26 @@ export default function Login() {
       style={styles.bg}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
-        <Text style={styles.title}>Login</Text>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Text style={styles.title}>Welcome Back 👋</Text>
 
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor="#ccc"
           value={email}
           onChangeText={setEmail}
-          placeholderTextColor="#ccc"
         />
-
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor="#ccc"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          placeholderTextColor="#ccc"
         />
 
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
@@ -59,7 +80,7 @@ export default function Login() {
         <TouchableOpacity onPress={() => router.push('/register')} style={styles.link}>
           <Text style={styles.linkText}>Don’t have an account? Register</Text>
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -69,9 +90,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  overlay: {
-    paddingHorizontal: 24,
+  centered: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
     gap: 16,
   },
   title: {
@@ -83,6 +111,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
@@ -103,6 +132,7 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#fff',
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   link: {
     marginTop: 12,
@@ -110,5 +140,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#cbd5e1',
     textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });

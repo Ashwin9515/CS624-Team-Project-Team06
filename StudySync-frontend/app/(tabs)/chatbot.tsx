@@ -1,94 +1,195 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
-  TextInput,
   Text,
-  ScrollView,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Button,
+  ScrollView,
+  ActivityIndicator,
   ImageBackground,
+  Alert,
 } from 'react-native';
-import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
+import API from '../../utils/api';
+import moment from 'moment';
 
 export default function Chatbot() {
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([]);
   const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<{ type: 'user' | 'bot'; text: string; timestamp?: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-
+  const fetchHistory = async () => {
     try {
-      const res = await axios.post(`${process.env.EXPO_PUBLIC_API}/chat`, { prompt: input });
-      const botMessage = { role: 'bot', content: res.data.response };
-      setMessages(prev => [...prev, botMessage]);
+      const res = await API.get('/chat/history');
+      const chat = res.data.flatMap((entry: any) => [
+        { type: 'user', text: entry.prompt, timestamp: entry.createdAt },
+        { type: 'bot', text: entry.response, timestamp: entry.createdAt },
+      ]);
+      setMessages(chat);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 300);
     } catch {
-      setMessages(prev => [...prev, { role: 'bot', content: '⚠️ Error connecting to server.' }]);
+      Alert.alert('Error', 'Failed to load chat history.');
     }
   };
 
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    const newMessage = { type: 'user', text: input, timestamp: new Date().toISOString() };
+    setMessages((prev) => [...prev, newMessage]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const res = await API.post('/chat', { prompt: input });
+      const botMessage = { type: 'bot', text: res.data.response, timestamp: new Date().toISOString() };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { type: 'bot', text: '⚠️ Failed to get response.', timestamp: new Date().toISOString() },
+      ]);
+    } finally {
+      setLoading(false);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  };
+
+  const clearChat = async () => {
+    Alert.alert('Clear Chat', 'Are you sure you want to delete all messages?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        onPress: async () => {
+          try {
+            await API.delete('/chat/history');
+            setMessages([]);
+          } catch {
+            Alert.alert('Error', 'Could not clear chat.');
+          }
+        },
+        style: 'destructive',
+      },
+    ]);
+  };
+
+  const formatTime = (timestamp?: string) =>
+    timestamp ? moment(timestamp).format('h:mm A') : '';
+
   return (
-    <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 12 }}>
-          {messages.map((m, i) => (
-            <View
-              key={i}
-              style={[styles.bubble, m.role === 'user' ? styles.user : styles.bot]}
-            >
-              <Text style={styles.text}>{m.content}</Text>
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.inputRow}>
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder="Ask anything..."
-            placeholderTextColor="#ccc"
-            style={styles.input}
-          />
-          <Button title="Send" onPress={handleSend} />
-        </View>
-      </KeyboardAvoidingView>
+    <ImageBackground
+      source={require('../../assets/studysync.png')}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
+      <View style={styles.header}>
+        <Text style={styles.title}>Study Bot 🤖</Text>
+        <TouchableOpacity onPress={clearChat}>
+          <Ionicons name="trash" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 80 }} ref={scrollRef}>
+        {messages.map((msg, i) => (
+          <View
+            key={i}
+            style={[
+              styles.bubble,
+              msg.type === 'user' ? styles.userBubble : styles.botBubble,
+            ]}
+          >
+            <Text style={styles.text}>{msg.text}</Text>
+            <Text style={styles.timestamp}>{formatTime(msg.timestamp)}</Text>
+          </View>
+        ))}
+        {loading && (
+          <View style={styles.botBubble}>
+            <ActivityIndicator color="#fff" size="small" />
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          placeholder="Ask something..."
+          placeholderTextColor="#ccc"
+          value={input}
+          onChangeText={setInput}
+        />
+        <TouchableOpacity onPress={sendMessage} disabled={loading} style={styles.sendBtn}>
+          <Ionicons name="send" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
-  container: { flex: 1, padding: 16 },
-  messages: { flex: 1, marginBottom: 12 },
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  messages: { flex: 1, padding: 16 },
   bubble: {
     padding: 12,
+    marginBottom: 10,
     borderRadius: 12,
-    marginVertical: 4,
     maxWidth: '80%',
   },
-  user: {
-    backgroundColor: '#34D399',
+  userBubble: {
     alignSelf: 'flex-end',
+    backgroundColor: '#3B82F6',
   },
-  bot: {
-    backgroundColor: '#E5E7EB',
+  botBubble: {
     alignSelf: 'flex-start',
+    backgroundColor: '#10B981',
   },
-  text: { fontSize: 16, color: '#111827' },
+  text: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  timestamp: {
+    color: '#ccc',
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: 'right',
+  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     color: '#fff',
-    borderRadius: 8,
-    padding: 12,
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
     marginRight: 8,
+  },
+  sendBtn: {
+    padding: 8,
   },
 });

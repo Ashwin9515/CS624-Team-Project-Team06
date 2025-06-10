@@ -14,14 +14,12 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
+          ios: { position: 'absolute' },
           default: {},
         }),
       }}
@@ -31,7 +29,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol name="house.fill" color={color} size={28} />
           ),
         }}
       />
@@ -40,7 +38,7 @@ export default function TabsLayout() {
         options={{
           title: 'Calendar',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="calendar" color={color} />
+            <IconSymbol name="calendar" color={color} size={28} />
           ),
         }}
       />
@@ -49,7 +47,7 @@ export default function TabsLayout() {
         options={{
           title: 'Tasks',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="checkmark.circle" color={color} />
+            <IconSymbol name="checkmark.circle" color={color} size={28} />
           ),
         }}
       />
@@ -58,11 +56,7 @@ export default function TabsLayout() {
         options={{
           title: 'Chatbot',
           tabBarIcon: ({ color }) => (
-            <IconSymbol
-              size={28}
-              name="bubble.left.and.bubble.right.fill"
-              color={color}
-            />
+            <IconSymbol name="bubble.left.and.bubble.right.fill" color={color} size={28} />
           ),
         }}
       />
@@ -71,7 +65,7 @@ export default function TabsLayout() {
         options={{
           title: 'Pomodoro',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="timer" color={color} />
+            <IconSymbol name="timer" color={color} size={28} />
           ),
         }}
       />
@@ -80,7 +74,7 @@ export default function TabsLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="gear" color={color} />
+            <IconSymbol name="gear" color={color} size={28} />
           ),
         }}
       />

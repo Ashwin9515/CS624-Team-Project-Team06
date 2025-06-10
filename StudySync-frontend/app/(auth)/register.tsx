@@ -11,26 +11,32 @@ import {
   Platform,
 } from 'react-native';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Register() {
+  const { login } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleRegister = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Missing Fields', 'Please fill out all fields.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Validation Error', 'Passwords do not match.');
       return;
     }
+
     try {
       const { data } = await API.post('/auth/register', { name, email, password });
-      await AsyncStorage.setItem('token', data.token);
-      router.replace('/home');
-    } catch (err) {
-      Alert.alert('Registration Error', 'Account creation failed. Try again.');
+      await login(data.token);
+    } catch (err: any) {
+      Alert.alert('Registration Error', err.response?.data?.error || 'Account creation failed. Try again.');
     }
   };
 
@@ -40,7 +46,10 @@ export default function Register() {
       style={styles.bg}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <Text style={styles.title}>Create Account</Text>
 
         <TextInput
@@ -54,6 +63,8 @@ export default function Register() {
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#ccc"
+          keyboardType="email-address"
+          autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         />
@@ -77,6 +88,10 @@ export default function Register() {
         <TouchableOpacity onPress={handleRegister} style={styles.button}>
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/login')} style={styles.link}>
+          <Text style={styles.linkText}>Already have an account? Login</Text>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </ImageBackground>
   );
@@ -88,12 +103,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
+    gap: 16,
   },
   title: {
     color: '#fff',
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: 16,
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
@@ -104,7 +120,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     borderRadius: 10,
     padding: 12,
-    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#ffffff40',
   },
@@ -112,11 +127,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     padding: 12,
     borderRadius: 10,
-    marginTop: 4,
+    marginTop: 8,
   },
   buttonText: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  link: {
+    marginTop: 12,
+  },
+  linkText: {
+    color: '#cbd5e1',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
 });
