@@ -39,7 +39,7 @@ export default {
       typedRoutes: true
     },
     extra: {
-      apiUrl: "https://shiny-space-succotash-v66j55qqrpqq34g7-5000.app.github.dev/api"
+      apiUrl: "https://shiny-space-succotash-v66j55qqrpqq34g7-5000.app.github.dev"
     }
   }
 };

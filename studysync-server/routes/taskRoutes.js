@@ -1,3 +1,4 @@
+// routes/taskRoutes.js
 import express from 'express';
 import {
   getTasks,
@@ -9,8 +10,8 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Use the correct middleware name
-router.use(protect); // Protect all task routes
+// Apply authentication to all task routes
+router.use(protect);
 
 router.get('/', getTasks);
 router.post('/', createTask);

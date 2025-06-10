@@ -10,11 +10,11 @@ export const getTasks = async (req, res) => {
 };
 
 export const createTask = async (req, res) => {
+  const { title } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: 'Title is required' });
+
   try {
-    const task = new Task({
-      ...req.body,
-      user: req.user._id,
-    });
+    const task = new Task({ ...req.body, user: req.user._id });
     await task.save();
     res.status(201).json(task);
   } catch (err) {
