@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { clearToken } from '../../utils/auth';
 import axios from 'axios';
+import { flushOfflineQueue } from '../../utils/appUtils'; // ✅ NEW
 
 export default function Home() {
   const router = useRouter();
@@ -30,7 +31,11 @@ export default function Home() {
       } catch (err) {
         console.error('Failed to fetch analytics', err);
       }
+
+      // ✅ Flush offline task queue on load
+      await flushOfflineQueue();
     };
+
     loadUserData();
   }, []);
 

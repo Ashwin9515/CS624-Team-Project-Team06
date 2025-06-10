@@ -12,9 +12,15 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, router } from 'expo-router';
 import API from '../../../utils/api';
+import {
+  enqueueTask,
+  enqueueDelete,
+  flushOfflineQueue,
+  isOffline,
+} from '../../../utils/appUtils';
 
 export default function EditTask() {
-  const { id } = useLocalSearchParams(); // task ID from URL
+  const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -51,14 +57,19 @@ export default function EditTask() {
       Alert.alert('Validation', 'Title is required.');
       return;
     }
+
+    const payload = { title, description, dueDate, priority };
+    const offline = await isOffline();
+
     try {
-      await API.put(`/tasks/${id}`, {
-        title,
-        description,
-        dueDate,
-        priority,
-      });
-      Alert.alert('Updated', 'Task updated successfully');
+      if (offline) {
+        await enqueueTask({ ...payload, _id: id, offlineAction: 'update' });
+        Alert.alert('Saved Offline', 'Task will sync when online');
+      } else {
+        await API.put(`/tasks/${id}`, payload);
+        await flushOfflineQueue();
+        Alert.alert('Updated', 'Task updated successfully');
+      }
       router.replace('/tasks');
     } catch (err: any) {
       Alert.alert('Error', err.response?.data?.error || 'Failed to update task');
@@ -73,8 +84,15 @@ export default function EditTask() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await API.delete(`/tasks/${id}`);
-            Alert.alert('Deleted', 'Task deleted');
+            const offline = await isOffline();
+            if (offline) {
+              await enqueueDelete(id as string);
+              Alert.alert('Deleted Offline', 'Task will be removed when online');
+            } else {
+              await API.delete(`/tasks/${id}`);
+              await flushOfflineQueue();
+              Alert.alert('Deleted', 'Task deleted');
+            }
             router.replace('/tasks');
           } catch {
             Alert.alert('Error', 'Failed to delete task');

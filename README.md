@@ -1,58 +1,118 @@
-# 📚 StudySync – TP02 Project Progress Report
+# 📚 StudySync – TP03 Project Final Submission Report
 
 ## 🚀 Overview
 
 **StudySync** is a mobile productivity app designed for students to manage their academic workload. Built with **React Native** using **Expo Router**, the app supports offline-first task tracking, a rule-based chatbot for study tips, a visual calendar for date-wise organization, and vibrant UI/UX styling for enhanced user experience.
 
-This README documents the project status for **TP02**, covering the features completed, technologies used, collaboration strategies, and implementation roadmap.
+Here's a comprehensive feature checklist for your StudySync app based on everything we've reviewed and implemented:
 
----
+✅ COMPLETED FEATURES (Fully Functional)
+🔐 Authentication
+ Login / Register with JWT
 
-## 🧩 Key Features Implemented
+ Auth token persisted via AsyncStorage
 
-- ✅ **Task Management (CRUD)**  
-  Add, view, update, and delete tasks with title, subject, due date, and priority.
+ Logout + token clearing
 
-- ✅ **Persistent Local Storage**  
-  All task data is saved using `AsyncStorage`, ensuring offline support.
+ Authenticated requests with token attached in Axios interceptor
 
-- ✅ **Rule-Based Chatbot**  
-  A local chatbot provides motivational study tips and answers academic productivity queries.
+📋 Tasks
+ Add task (with offline queueing if offline)
 
-- ✅ **Calendar View**  
-  In-app calendar using `react-native-calendars` allows students to visualize tasks by due date.
+ Edit task
 
-- ✅ **Component-Based UI**  
-  Reusable components like `TaskCard` and `MessageBubble` enhance consistency and design.
+ Delete task
 
-- ✅ **Scalable Backend Option**  
-  A MERN stack backend (Node.js + MongoDB Atlas) is implemented as a future enhancement path for cloud-based syncing.
+ View all tasks
 
----
+ Task list filters by calendar date (index.tsx + calendar integration)
 
-## 🧠 TP01 Feedback Response
+ Status indicators for completed/incomplete
 
-- **🔔 Notifications & Reminders**  
-  We’ve laid the foundation for reminders by emphasizing due dates and calendar visuals. Push notifications via `expo-notifications` are planned for TP03.
+ Offline caching and reading from cache if network fails
 
-- **🔐 Data Privacy Practices**  
-  The app uses local storage by default and does not collect or transmit user data. Optional backend mode handles only non-sensitive metadata with plans for encryption and secure communication in the future.
+🗓 Calendar
+ Calendar view using react-native-calendars
 
----
+ Dates marked with task completion status (multi-dot logic)
 
-## 🗂 Screens & Navigation
+ Tap a day to filter tasks
 
-| Screen        | Description                                          |
-|---------------|------------------------------------------------------|
-| `HomeScreen`  | Entry point with navigation buttons to core features |
-| `TasksScreen` | List of all tasks with editable entries              |
-| `AddTask`     | Form to add or update a task                         |
-| `Calendar`    | View tasks by due date using interactive calendar    |
-| `Chatbot`     | Interact with a study-focused rule-based assistant   |
+⏱ Pomodoro Timer
+ Circular countdown UI
 
-Navigation is implemented using folder-based routing via **Expo Router**.
+ Work/break session logic with long break every 4th session
 
----
+ Local session tracking
+
+ Analytics logged to backend
+
+ Offline persistence of timer preferences (AsyncStorage)
+
+ Optional vibration and alerts
+
+📊 Analytics
+ Analytics dashboard showing:
+
+Tasks completed
+
+Pomodoro minutes
+
+ Reads from backend
+
+ Shows session data on Home screen
+
+🤖 Chatbot
+ Chat UI functional
+
+ Messages sent/received
+
+ Timestamps shown
+
+ Chat saved per user in MongoDB
+
+ Clear chat history button
+
+⚙️ Settings
+ Toggle for:
+
+Notifications
+
+Vibration
+
+Long Breaks
+
+ Edit Pomodoro durations
+
+ Clear local cache
+
+ Reset Pomodoro analytics
+
+ Logout button
+
+🧠 Offline Support
+ Cached task read (AsyncStorage)
+
+ Queued task creation
+
+ Pomodoro preferences + sessions saved offline
+
+ Settings/preferences saved offline
+
+⏳ PARTIALLY IMPLEMENTED / FUTURE OPTIONS (Intentionally Skipped or Deferred)
+Feature	Status	Notes
+Offline Edit/Delete of Tasks	⏳ Not Needed	Currently network-only. Queueing would require conflict resolution.
+Push Notifications	⏳ Planned	Toggle exists, but actual scheduling via expo-notifications not setup
+Chatbot model improvements	⏳ Planned	Current bot is simple – AI upgrades (e.g., Gemma or Phi-2 via Ollama) are pending
+UI/UX Animation Enhancements	⏳ Optional	Transitions, gestures, or haptics can be added later if needed
+User testing / Accessibility	⏳ External	Suggested by feedback; requires real-world user feedback & adjustments
+
+📌 FINAL SCORECARD
+Category	Status
+Core Features	✅ 100% Done
+Offline Functionality	✅ 95% (Add only)
+Advanced UX/AI	⏳ Deferred
+Backend Integration	✅ Complete
 
 ## 💻 Tech Stack
 

@@ -12,6 +12,10 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import API from '../../../utils/api';
+import {
+  enqueueTask,
+  flushOfflineQueue,
+} from '../../../utils/appUtils';
 
 export default function AddTask() {
   const [title, setTitle] = useState('');
@@ -26,17 +30,26 @@ export default function AddTask() {
       return;
     }
 
+    const task = { title, description, dueDate, priority };
+
     try {
-      await API.post('/tasks', {
-        title,
-        description,
-        dueDate,
-        priority,
-      });
+      // Attempt to send task to backend
+      await API.post('/tasks', task);
+
+      // Attempt to flush previously failed/queued tasks
+      await flushOfflineQueue();
+
       Alert.alert('Success', 'Task created');
       router.replace('/tasks');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to add task.');
+      // If offline or server unreachable, queue task locally
+      if (!err.response) {
+        await enqueueTask(task);
+        Alert.alert('Offline', 'Task saved locally and will sync when online.');
+        router.replace('/tasks');
+      } else {
+        Alert.alert('Error', err.response?.data?.error || 'Failed to add task.');
+      }
     }
   };
 

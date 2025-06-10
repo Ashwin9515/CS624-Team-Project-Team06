@@ -7,6 +7,7 @@ import taskRoutes from './routes/taskRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import pomodoroRoutes from './routes/pomodoroRoutes.js';
+import authRoutes from './routes/auth.js';
 
 dotenv.config();
 connectDB();
@@ -23,6 +24,7 @@ app.use('/tasks', taskRoutes);
 app.use('/chat', chatRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/pomodoro', pomodoroRoutes);
+app.use('/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.send('API running...');

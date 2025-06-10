@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Svg, Circle } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from '../../utils/api';
+import { enqueuePomodoroLog, flushOfflineQueue } from '../../utils/appUtils';
 
 const { width } = Dimensions.get('window');
 const size = width * 0.7;
@@ -41,13 +42,15 @@ export default function Pomodoro() {
 
       const saved = await AsyncStorage.getItem('pomodoroSessions');
       if (saved) setSessionCount(parseInt(saved));
+
+      await flushOfflineQueue(); // flush any pending logs
     })();
   }, []);
 
   useEffect(() => {
     if (running && seconds > 0) {
       intervalRef.current = setInterval(() => {
-        setSeconds(s => s - 1);
+        setSeconds((s) => s - 1);
       }, 1000);
     } else if (seconds === 0) {
       handleSessionComplete();
@@ -73,7 +76,8 @@ export default function Pomodoro() {
       try {
         await API.post('/pomodoro/log', { minutes: workDuration / 60 });
       } catch (err) {
-        console.warn('Pomodoro log failed', err);
+        await enqueuePomodoroLog({ minutes: workDuration / 60 });
+        console.warn('Pomodoro log failed, queued for later sync.');
       }
 
       setOnBreak(true);
@@ -92,7 +96,9 @@ export default function Pomodoro() {
   const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
   const secs = (seconds % 60).toString().padStart(2, '0');
   const totalTime = onBreak
-    ? (longBreaksEnabled && sessionCount % 4 === 0 ? longBreakDuration : breakDuration)
+    ? longBreaksEnabled && sessionCount % 4 === 0
+      ? longBreakDuration
+      : breakDuration
     : workDuration;
   const progress = seconds / totalTime;
   const strokeDashoffset = circumference * (1 - progress);

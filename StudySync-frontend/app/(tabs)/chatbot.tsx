@@ -33,9 +33,15 @@ export default function Chatbot() {
   const fetchHistory = async () => {
     try {
       const res = await API.get('/chat/history');
-      setMessages(res.data);
+      if (Array.isArray(res.data)) {
+        setMessages(res.data);
+      } else {
+        console.error('Invalid chat history:', res.data);
+        Alert.alert('Error', 'Invalid chat data received.');
+      }
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 300);
-    } catch {
+    } catch (err) {
+      console.error('Chat history error:', err);
       Alert.alert('Error', 'Failed to load chat history.');
     }
   };
@@ -56,14 +62,19 @@ export default function Chatbot() {
       const res = await API.post('/chat', { prompt: input });
       const botMessage: ChatMessage = {
         role: 'bot',
-        message: res.data.response,
+        message: res.data.response || '⚠️ No response received.',
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, botMessage]);
-    } catch {
+    } catch (err) {
+      console.error('Chatbot Error:', err);
       setMessages((prev) => [
         ...prev,
-        { role: 'bot', message: '⚠️ Failed to get response.', timestamp: new Date().toISOString() },
+        {
+          role: 'bot',
+          message: '⚠️ Failed to get response.',
+          timestamp: new Date().toISOString(),
+        },
       ]);
     } finally {
       setLoading(false);
@@ -80,7 +91,8 @@ export default function Chatbot() {
           try {
             await API.delete('/chat/history');
             setMessages([]);
-          } catch {
+          } catch (err) {
+            console.error('Clear chat error:', err);
             Alert.alert('Error', 'Could not clear chat.');
           }
         },
@@ -94,7 +106,7 @@ export default function Chatbot() {
 
   return (
     <ImageBackground
-      source={require('../../assets/studysync.png')}
+      source={require('../../assets/chatbot-wallpaper.png')}
       style={{ flex: 1 }}
       resizeMode="cover"
     >
@@ -105,7 +117,12 @@ export default function Chatbot() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.messages} contentContainerStyle={{ paddingBottom: 80 }} ref={scrollRef}>
+      <ScrollView
+        style={styles.messages}
+        contentContainerStyle={{ paddingBottom: 80 }}
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+      >
         {messages.map((msg, i) => (
           <View
             key={i}

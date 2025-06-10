@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -17,33 +17,21 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
   const { login } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      const token = await login(); // reuse AuthContext logic if it reads token on init
-      if (!token) setLoading(false);
-    })();
-  }, []);
-
   const handleLogin = async () => {
+    setLoading(true);
     try {
       const res = await API.post('/auth/login', { email, password });
       await login(res.data.token);
     } catch (err: any) {
       Alert.alert('Login Failed', err.response?.data?.error || 'Invalid credentials');
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
-      </View>
-    );
-  }
 
   return (
     <ImageBackground
@@ -73,8 +61,12 @@ export default function Login() {
           onChangeText={setPassword}
         />
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginText}>Login</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.loginText}>Login</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/register')} style={styles.link}>
@@ -89,12 +81,6 @@ const styles = StyleSheet.create({
   bg: {
     flex: 1,
     justifyContent: 'center',
-  },
-  centered: {
-    flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   overlay: {
     flex: 1,

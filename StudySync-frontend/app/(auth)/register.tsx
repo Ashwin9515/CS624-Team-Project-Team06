@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import API from '../../utils/api';
@@ -20,6 +21,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -32,11 +34,15 @@ export default function Register() {
       return;
     }
 
+    setLoading(true);
     try {
       const { data } = await API.post('/auth/register', { name, email, password });
       await login(data.token);
     } catch (err: any) {
+      console.error('Registration failed:', err);
       Alert.alert('Registration Error', err.response?.data?.error || 'Account creation failed. Try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,8 +91,12 @@ export default function Register() {
           onChangeText={setConfirmPassword}
         />
 
-        <TouchableOpacity onPress={handleRegister} style={styles.button}>
-          <Text style={styles.buttonText}>Register</Text>
+        <TouchableOpacity onPress={handleRegister} style={styles.button} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/login')} style={styles.link}>

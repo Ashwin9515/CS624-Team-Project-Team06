@@ -19,7 +19,7 @@ export const queryAI = async (prompt) => {
     return res.data.response.trim();
   } catch (error) {
     console.error('Phi-2 API error:', error.message);
-    throw error;
+    return '⚠️ Sorry, AI service is currently unavailable.';
   }
 };
 
