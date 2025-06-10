@@ -54,7 +54,7 @@ export default function AddTask() {
   };
 
   return (
-    <ImageBackground source={require('../../../assets/studysync.png')} style={{ flex: 1 }}>
+    <ImageBackground source={require('../../../assets/tasks.png')} style={{ flex: 1 }}>
       <View style={styles.container}>
         <Text style={styles.heading}>Add New Task</Text>
 

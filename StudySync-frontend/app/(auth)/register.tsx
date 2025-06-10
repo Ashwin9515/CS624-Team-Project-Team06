@@ -48,7 +48,7 @@ export default function Register() {
 
   return (
     <ImageBackground
-      source={require('../../assets/studysync.png')}
+      source={require('../../assets/register.png')}
       style={styles.bg}
       resizeMode="cover"
     >

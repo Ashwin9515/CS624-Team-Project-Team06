@@ -61,7 +61,7 @@ export default function TaskCalendar() {
 
   return (
     <ImageBackground
-      source={require('../../assets/studysync.png')}
+      source={require('../../assets/calendar.png')}
       style={styles.bg}
       resizeMode="cover"
     >

@@ -40,7 +40,7 @@ export default function Settings() {
   };
 
   return (
-    <ImageBackground source={require('../../assets/studysync.png')} style={styles.bg}>
+    <ImageBackground source={require('../../assets/settings.png')} style={styles.bg}>
       <View style={styles.overlay}>
         <Text style={styles.heading}>⚙️ Settings</Text>
 
