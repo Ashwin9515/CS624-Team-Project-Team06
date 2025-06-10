@@ -14,9 +14,15 @@ import { Ionicons } from '@expo/vector-icons';
 import API from '../../utils/api';
 import moment from 'moment';
 
+type ChatMessage = {
+  role: 'user' | 'bot';
+  message: string;
+  timestamp?: string;
+};
+
 export default function Chatbot() {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{ type: 'user' | 'bot'; text: string; timestamp?: string }[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -27,11 +33,7 @@ export default function Chatbot() {
   const fetchHistory = async () => {
     try {
       const res = await API.get('/chat/history');
-      const chat = res.data.flatMap((entry: any) => [
-        { type: 'user', text: entry.prompt, timestamp: entry.createdAt },
-        { type: 'bot', text: entry.response, timestamp: entry.createdAt },
-      ]);
-      setMessages(chat);
+      setMessages(res.data);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: false }), 300);
     } catch {
       Alert.alert('Error', 'Failed to load chat history.');
@@ -40,19 +42,28 @@ export default function Chatbot() {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const newMessage = { type: 'user', text: input, timestamp: new Date().toISOString() };
-    setMessages((prev) => [...prev, newMessage]);
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      message: input,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
       const res = await API.post('/chat', { prompt: input });
-      const botMessage = { type: 'bot', text: res.data.response, timestamp: new Date().toISOString() };
+      const botMessage: ChatMessage = {
+        role: 'bot',
+        message: res.data.response,
+        timestamp: new Date().toISOString(),
+      };
       setMessages((prev) => [...prev, botMessage]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { type: 'bot', text: '⚠️ Failed to get response.', timestamp: new Date().toISOString() },
+        { role: 'bot', message: '⚠️ Failed to get response.', timestamp: new Date().toISOString() },
       ]);
     } finally {
       setLoading(false);
@@ -100,10 +111,10 @@ export default function Chatbot() {
             key={i}
             style={[
               styles.bubble,
-              msg.type === 'user' ? styles.userBubble : styles.botBubble,
+              msg.role === 'user' ? styles.userBubble : styles.botBubble,
             ]}
           >
-            <Text style={styles.text}>{msg.text}</Text>
+            <Text style={styles.text}>{msg.message}</Text>
             <Text style={styles.timestamp}>{formatTime(msg.timestamp)}</Text>
           </View>
         ))}

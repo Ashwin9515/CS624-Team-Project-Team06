@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import ChatMessage from '../models/ChatMessage.js';
 import { queryAI } from '../controllers/chatController.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -16,14 +16,17 @@ router.post('/', protect, async (req, res) => {
   try {
     const response = await queryAI(prompt);
 
-    // Save to DB
-    const message = await ChatMessage.create({
-      user: req.user._id,
-      prompt,
-      response,
-    });
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.json({ response: message.response });
+    user.chatHistory.push(
+      { role: 'user', message: prompt, timestamp: new Date() },
+      { role: 'bot', message: response, timestamp: new Date() }
+    );
+
+    await user.save();
+
+    res.json({ response });
   } catch (err) {
     console.error('Chat error:', err);
     res.status(500).json({ error: 'Failed to get AI response' });
@@ -33,8 +36,8 @@ router.post('/', protect, async (req, res) => {
 // GET /chat/history → fetch user chat
 router.get('/history', protect, async (req, res) => {
   try {
-    const history = await ChatMessage.find({ user: req.user._id }).sort('createdAt');
-    res.json(history);
+    const user = await User.findById(req.user._id).select('chatHistory');
+    res.json(user.chatHistory || []);
   } catch {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
@@ -43,7 +46,7 @@ router.get('/history', protect, async (req, res) => {
 // DELETE /chat/history → clear history
 router.delete('/history', protect, async (req, res) => {
   try {
-    await ChatMessage.deleteMany({ user: req.user._id });
+    await User.findByIdAndUpdate(req.user._id, { $set: { chatHistory: [] } });
     res.json({ message: 'History cleared' });
   } catch {
     res.status(500).json({ error: 'Failed to delete history' });

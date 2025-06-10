@@ -3,7 +3,13 @@ import { View, Text, StyleSheet, ImageBackground, ActivityIndicator, Alert } fro
 import API from '../../utils/api';
 
 export default function Analytics() {
-  const [stats, setStats] = useState<{ completed: number; weeklyCount: number; totalPomodoro: number } | null>(null);
+  const [stats, setStats] = useState<{
+    completed: number;
+    weeklyCount: number;
+    totalPomodoro: number;
+    messagesExchanged?: number;
+    recentPrompt?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +39,16 @@ export default function Analytics() {
             <Text style={styles.stat}>✅ Tasks Completed: {stats.completed}</Text>
             <Text style={styles.stat}>📅 This Week: {stats.weeklyCount}</Text>
             <Text style={styles.stat}>⏱ Total Pomodoro: {formatPomodoroTime(stats.totalPomodoro)}</Text>
+            {stats.messagesExchanged !== undefined && (
+              <Text style={styles.stat}>💬 Chat Messages: {stats.messagesExchanged}</Text>
+            )}
+            {stats.recentPrompt && (
+              <Text style={styles.recent}>
+                🧠 Last Prompt: “{stats.recentPrompt.length > 40
+                  ? stats.recentPrompt.slice(0, 40) + '...'
+                  : stats.recentPrompt}”
+              </Text>
+            )}
           </>
         )}
       </View>
@@ -54,5 +70,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     marginBottom: 12,
+  },
+  recent: {
+    color: '#ccc',
+    fontStyle: 'italic',
+    fontSize: 14,
+    marginTop: 8,
   },
 });
