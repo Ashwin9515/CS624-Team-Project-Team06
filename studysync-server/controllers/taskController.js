@@ -1,8 +1,19 @@
+// controllers/taskController.js
 import Task from '../models/Task.js';
 
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user._id });
+    const filters = { user: req.user._id };
+
+    if (req.query.completed !== undefined) {
+      filters.completed = req.query.completed === 'true';
+    }
+
+    if (req.query.priority) {
+      filters.priority = req.query.priority;
+    }
+
+    const tasks = await Task.find(filters).sort({ dueDate: 1 });
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -10,9 +21,6 @@ export const getTasks = async (req, res) => {
 };
 
 export const createTask = async (req, res) => {
-  const { title } = req.body;
-  if (!title?.trim()) return res.status(400).json({ error: 'Title is required' });
-
   try {
     const task = new Task({ ...req.body, user: req.user._id });
     await task.save();

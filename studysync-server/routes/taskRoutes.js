@@ -7,15 +7,18 @@ import {
   deleteTask,
 } from '../controllers/taskController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import {
+  validateCreateTask,
+  validateUpdateTask,
+} from '../validators/taskValidator.js';
 
 const router = express.Router();
 
-// Apply authentication to all task routes
 router.use(protect);
 
 router.get('/', getTasks);
-router.post('/', createTask);
-router.put('/:id', updateTask);
+router.post('/', validateCreateTask, createTask);
+router.put('/:id', validateUpdateTask, updateTask);
 router.delete('/:id', deleteTask);
 
 export default router;

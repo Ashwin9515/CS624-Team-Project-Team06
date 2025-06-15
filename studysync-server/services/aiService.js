@@ -1,6 +1,7 @@
+// aiService.js
 import axios from 'axios';
 
-const model = process.env.OLLAMA_MODEL || 'tinyllama'; // default to smaller model
+const model = process.env.OLLAMA_MODEL || 'tinyllama';
 const AI_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 
 export const queryAI = async (prompt) => {
@@ -17,7 +18,7 @@ export const queryAI = async (prompt) => {
 
     return response.data.response.trim();
   } catch (err) {
-    console.error('AI error:', err.message);
+    console.error('AI service error:', err.message);
     return '⚠️ AI service is currently unavailable.';
   }
 };

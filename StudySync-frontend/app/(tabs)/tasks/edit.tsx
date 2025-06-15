@@ -28,6 +28,9 @@ export default function EditTask() {
   const [priority, setPriority] = useState('Medium');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [loadingAI, setLoadingAI] = useState(false);
+
   useEffect(() => {
     fetchTask();
   }, []);
@@ -49,6 +52,29 @@ export default function EditTask() {
     } catch (err) {
       Alert.alert('Error', 'Failed to load task');
       router.replace('/tasks');
+    }
+  };
+
+  const handleAISuggestion = async () => {
+    if (!aiPrompt.trim()) return;
+    try {
+      setLoadingAI(true);
+      const res = await API.post('/chat', { prompt: aiPrompt });
+      const parsed = JSON.parse(res.data.response);
+
+      if (parsed.title) setTitle(parsed.title);
+      if (parsed.description) setDescription(parsed.description);
+      if (parsed.dueDate) {
+        const parsedDate = new Date(parsed.dueDate);
+        if (!isNaN(parsedDate.getTime())) setDueDate(parsedDate);
+      }
+      if (['Low', 'Medium', 'High'].includes(parsed.priority)) {
+        setPriority(parsed.priority);
+      }
+    } catch (err) {
+      Alert.alert('AI Error', 'Could not get AI suggestions');
+    } finally {
+      setLoadingAI(false);
     }
   };
 
@@ -111,6 +137,23 @@ export default function EditTask() {
 
         <TextInput
           style={styles.input}
+          placeholder="Describe task edit to AI (e.g., 'postpone to Friday')"
+          placeholderTextColor="#ccc"
+          value={aiPrompt}
+          onChangeText={setAiPrompt}
+        />
+        <TouchableOpacity
+          onPress={handleAISuggestion}
+          style={[styles.button, loadingAI && { opacity: 0.6 }]}
+          disabled={loadingAI}
+        >
+          <Text style={styles.buttonText}>
+            {loadingAI ? 'Thinking...' : 'Suggest Edits with AI'}
+          </Text>
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
           placeholder="Title"
           placeholderTextColor="#ccc"
           value={title}
@@ -134,9 +177,11 @@ export default function EditTask() {
             value={dueDate}
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={(_, selectedDate) => {
+            onChange={(event, selectedDate) => {
               setShowDatePicker(false);
-              if (selectedDate) setDueDate(selectedDate);
+              if (event?.type === 'set' && selectedDate) {
+                setDueDate(selectedDate);
+              }
             }}
           />
         )}
@@ -216,7 +261,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     padding: 14,
     borderRadius: 10,
-    marginTop: 16,
+    marginTop: 12,
   },
   deleteButton: {
     backgroundColor: '#EF4444',

@@ -1,36 +1,28 @@
-import axios from 'axios';
+import { queryAI } from '../services/aiService.js';
 import User from '../models/User.js';
-
-const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'tinyllama';
-
-export const queryAI = async (prompt) => {
-  try {
-    const res = await axios.post(`${OLLAMA_URL}/api/generate`, {
-      model: OLLAMA_MODEL,
-      prompt,
-      stream: false,
-    });
-
-    if (!res.data || !res.data.response) {
-      throw new Error('Invalid response from AI model');
-    }
-
-    return res.data.response.trim();
-  } catch (error) {
-    console.error('Phi-2 API error:', error.message);
-    return '⚠️ Sorry, AI service is currently unavailable.';
-  }
-};
 
 export const handleChat = async (req, res) => {
   const { prompt, relatedTask } = req.body;
+
   if (!prompt?.trim()) {
     return res.status(400).json({ error: 'Prompt is required.' });
   }
 
   try {
-    const response = await queryAI(prompt);
+    const aiPrompt = `
+You are a helpful assistant for a productivity app. Convert the following user input into a JSON object with these keys:
+- title (string)
+- description (string)
+- dueDate (ISO 8601 format, e.g., "2025-06-30")
+- priority (one of: Low, Medium, High)
+
+Only respond with valid JSON. No explanation or surrounding text.
+
+User Input: ${prompt}
+    `.trim();
+
+    const response = await queryAI(aiPrompt);
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 

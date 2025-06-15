@@ -23,6 +23,38 @@ export default function AddTask() {
   const [dueDate, setDueDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [priority, setPriority] = useState('Medium');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [loadingAI, setLoadingAI] = useState(false);
+
+  const handleAISuggestion = async () => {
+    if (!aiPrompt.trim()) return;
+
+    try {
+      setLoadingAI(true);
+      const res = await API.post('/chat', { prompt: aiPrompt });
+
+      let parsed;
+      try {
+        parsed = JSON.parse(res.data.response);
+      } catch {
+        throw new Error('AI response could not be parsed. Make sure it is valid JSON.');
+      }
+
+      setTitle(parsed.title || '');
+      setDescription(parsed.description || '');
+      if (parsed.dueDate) {
+        const parsedDate = new Date(parsed.dueDate);
+        if (!isNaN(parsedDate.getTime())) setDueDate(parsedDate);
+      }
+      if (['Low', 'Medium', 'High'].includes(parsed.priority)) {
+        setPriority(parsed.priority);
+      }
+    } catch (err) {
+      Alert.alert('AI Suggestion Error', err.message || 'Failed to fetch suggestions.');
+    } finally {
+      setLoadingAI(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -33,16 +65,11 @@ export default function AddTask() {
     const task = { title, description, dueDate, priority };
 
     try {
-      // Attempt to send task to backend
       await API.post('/tasks', task);
-
-      // Attempt to flush previously failed/queued tasks
       await flushOfflineQueue();
-
       Alert.alert('Success', 'Task created');
       router.replace('/tasks');
     } catch (err: any) {
-      // If offline or server unreachable, queue task locally
       if (!err.response) {
         await enqueueTask(task);
         Alert.alert('Offline', 'Task saved locally and will sync when online.');
@@ -57,6 +84,23 @@ export default function AddTask() {
     <ImageBackground source={require('../../../assets/tasks.png')} style={{ flex: 1 }}>
       <View style={styles.container}>
         <Text style={styles.heading}>Add New Task</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Describe task to AI (e.g., 'Submit assignment by Friday')"
+          placeholderTextColor="#ccc"
+          value={aiPrompt}
+          onChangeText={setAiPrompt}
+        />
+        <TouchableOpacity
+          onPress={handleAISuggestion}
+          style={[styles.button, loadingAI && { opacity: 0.6 }]}
+          disabled={loadingAI}
+        >
+          <Text style={styles.buttonText}>
+            {loadingAI ? 'Generating...' : 'Suggest Task with AI'}
+          </Text>
+        </TouchableOpacity>
 
         <TextInput
           style={styles.input}
@@ -80,15 +124,17 @@ export default function AddTask() {
 
         {showDatePicker && (
           <DateTimePicker
-            value={dueDate}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={(_, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) setDueDate(selectedDate);
-            }}
-          />
-        )}
+          value={dueDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (event?.type === 'set' && selectedDate) {
+              setDueDate(selectedDate);
+            }
+          }}
+        />
+      )}
 
         <View style={styles.priorityRow}>
           {['Low', 'Medium', 'High'].map((level) => (
@@ -161,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     padding: 14,
     borderRadius: 10,
-    marginTop: 16,
+    marginTop: 12,
   },
   buttonText: {
     color: '#fff',

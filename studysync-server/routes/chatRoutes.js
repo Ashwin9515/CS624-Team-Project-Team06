@@ -1,62 +1,20 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { queryAI } from '../controllers/chatController.js';
-import User from '../models/User.js';
+import {
+  handleChat,
+  fetchChatHistory,
+  clearChatHistory,
+} from '../controllers/chatController.js';
 
 const router = express.Router();
 
-// POST /chat → generate response + save
-router.post('/', protect, async (req, res) => {
-  const { prompt } = req.body;
+// POST /chat → generate AI response and save chat
+router.post('/', protect, handleChat);
 
-  if (!prompt?.trim()) {
-    return res.status(400).json({ error: 'Prompt is required.' });
-  }
+// GET /chat/history → fetch chat history
+router.get('/history', protect, fetchChatHistory);
 
-  try {
-    const response = await queryAI(prompt);
-
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    user.chatHistory.push(
-      { role: 'user', message: prompt, timestamp: new Date() },
-      { role: 'bot', message: response, timestamp: new Date() }
-    );
-
-    await user.save();
-
-    res.json({ response });
-  } catch (err) {
-    console.error('Chat error:', err);
-    res.status(500).json({ error: 'Failed to get AI response' });
-  }
-});
-
-// GET /chat/history → fetch user chat
-router.get('/history', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('chatHistory');
-    res.json(user.chatHistory || []);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch history' });
-  }
-});
-
-// DELETE /chat/history → clear history
-router.delete('/history', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    user.chatHistory = [];
-    await user.save();
-
-    res.sendStatus(204);
-  } catch (err) {
-    console.error('Error clearing chat history:', err);
-    res.status(500).json({ error: 'Failed to clear history' });
-  }
-});
+// DELETE /chat/history → clear chat history
+router.delete('/history', protect, clearChatHistory);
 
 export default router;

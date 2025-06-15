@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl, Text, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  ScrollView,
+  RefreshControl,
+  Text,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 import API from '@/utils/api';
 import TaskItem from '@/components/TaskItem';
 import moment from 'moment';
@@ -12,6 +20,7 @@ export default function TasksScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { date } = useLocalSearchParams(); // from calendar.tsx
   const router = useRouter();
+  const isFocused = useIsFocused(); // NEW
 
   const fetchTasks = async () => {
     try {
@@ -31,8 +40,10 @@ export default function TasksScreen() {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (isFocused) {
+      fetchTasks(); // refresh tasks when screen regains focus
+    }
+  }, [isFocused]);
 
   const onRefresh = async () => {
     setRefreshing(true);

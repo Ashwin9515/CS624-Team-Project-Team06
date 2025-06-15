@@ -13,7 +13,7 @@ const radius = (size - strokeWidth) / 2;
 const circumference = 2 * Math.PI * radius;
 
 export default function Pomodoro() {
-  const [seconds, setSeconds] = useState(1500); // default 25 min
+  const [seconds, setSeconds] = useState(1500);
   const [workDuration, setWorkDuration] = useState(1500);
   const [breakDuration, setBreakDuration] = useState(300);
   const [longBreakDuration, setLongBreakDuration] = useState(900);
@@ -43,7 +43,7 @@ export default function Pomodoro() {
       const saved = await AsyncStorage.getItem('pomodoroSessions');
       if (saved) setSessionCount(parseInt(saved));
 
-      await flushOfflineQueue(); // flush any pending logs
+      await flushOfflineQueue();
     })();
   }, []);
 
@@ -55,6 +55,7 @@ export default function Pomodoro() {
     } else if (seconds === 0) {
       handleSessionComplete();
     }
+
     return () => clearInterval(intervalRef.current as NodeJS.Timeout);
   }, [running, seconds]);
 
@@ -93,6 +94,17 @@ export default function Pomodoro() {
     setRunning(true);
   };
 
+  const handleRestart = () => {
+    clearInterval(intervalRef.current as NodeJS.Timeout);
+    const resetTime = onBreak
+      ? longBreaksEnabled && sessionCount % 4 === 0
+        ? longBreakDuration
+        : breakDuration
+      : workDuration;
+    setSeconds(resetTime);
+    setRunning(false);
+  };
+
   const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
   const secs = (seconds % 60).toString().padStart(2, '0');
   const totalTime = onBreak
@@ -128,15 +140,27 @@ export default function Pomodoro() {
           origin={`${size / 2}, ${size / 2}`}
         />
       </Svg>
+
       <Text style={styles.timer}>{minutes}:{secs}</Text>
       <Text style={styles.modeText}>{onBreak ? 'Break Time 🧘' : 'Focus Time 🔥'}</Text>
-      <View style={styles.buttonWrapper}>
-        <Button
-          title={running ? 'Pause' : 'Start'}
-          onPress={() => setRunning(!running)}
-          color="#ffffff"
-        />
+
+      <View style={styles.buttonRow}>
+        <View style={styles.buttonWrapper}>
+          <Button
+            title={running ? 'Pause' : 'Start'}
+            onPress={() => setRunning(!running)}
+            color="#ffffff"
+          />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <Button
+            title="Restart"
+            onPress={handleRestart}
+            color="#FBBF24"
+          />
+        </View>
       </View>
+
       <Text style={styles.sessionCount}>🧠 Sessions Completed: {sessionCount}</Text>
     </LinearGradient>
   );
@@ -162,11 +186,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-  buttonWrapper: {
+  buttonRow: {
     position: 'absolute',
     bottom: 100,
+    flexDirection: 'row',
+    gap: 16,
+  },
+  buttonWrapper: {
     backgroundColor: '#ffffff30',
     borderRadius: 8,
     overflow: 'hidden',
+    marginHorizontal: 8,
   },
 });

@@ -1,10 +1,12 @@
-import { View, Text, Pressable } from 'react-native';
-import React from 'react';
+import { View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import clsx from 'clsx';
+import API from '@/utils/api';
 
 const TaskItem = ({ task }) => {
   const router = useRouter();
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -16,6 +18,32 @@ const TaskItem = ({ task }) => {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-200 text-gray-700';
+    }
+  };
+
+  const handleAISuggest = async () => {
+    setLoadingAI(true);
+    try {
+      const prompt = `Improve this task:\nTitle: ${task.title}\nDescription: ${task.description}\nDue Date: ${task.dueDate}\nPriority: ${task.priority}\nStatus: ${task.status}`;
+      const res = await API.post('/chat', { prompt, relatedTask: task._id });
+
+      const suggestion = JSON.parse(res.data.response);
+
+      const updatedTask = {
+        title: suggestion.title || task.title,
+        description: suggestion.description || task.description,
+        dueDate: suggestion.dueDate || task.dueDate,
+        priority: suggestion.priority || task.priority,
+        status: suggestion.status || task.status,
+      };
+
+      await API.put(`/tasks/${task._id}`, updatedTask);
+      Alert.alert('Updated', 'Task updated with AI suggestion.');
+      router.replace('/tasks'); // reload task list
+    } catch (err) {
+      Alert.alert('AI Error', 'Could not update task with AI suggestion.');
+    } finally {
+      setLoadingAI(false);
     }
   };
 
@@ -43,6 +71,15 @@ const TaskItem = ({ task }) => {
           {task.status}
         </Text>
       </View>
+
+      <Pressable
+        onPress={handleAISuggest}
+        className="mt-3 bg-purple-600 px-4 py-2 rounded-full self-start"
+      >
+        <Text className="text-white font-medium">
+          {loadingAI ? 'Thinking...' : '🤖 Suggest'}
+        </Text>
+      </Pressable>
     </Pressable>
   );
 };
